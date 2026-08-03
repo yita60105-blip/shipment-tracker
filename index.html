@@ -11,6 +11,7 @@
             --primary: #2563eb;
             --primary-hover: #1d4ed8;
             --danger: #ef4444;
+            --success: #10b981;
             --text-main: #1f2937;
             --text-muted: #6b7280;
             --border-color: #e5e7eb;
@@ -36,7 +37,7 @@
 
         header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
         h1 {
@@ -65,30 +66,30 @@
             color: var(--text-muted);
         }
 
-        input[type="date"] {
+        input[type="date"], input[type="url"] {
             width: 100%;
             height: 48px;
             padding: 0 12px;
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            font-size: 1rem;
+            font-size: 0.95rem;
             outline: none;
             background-color: #fff;
         }
 
-        /* 項目選擇按鈕區 */
+        /* 多選項目按鈕區 */
         .category-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
         }
 
         .cat-btn {
-            height: 52px;
+            height: 48px;
             border: 2px solid var(--border-color);
             background-color: #fff;
             border-radius: 8px;
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 600;
             color: var(--text-main);
             cursor: pointer;
@@ -154,7 +155,6 @@
             background-color: var(--primary-hover);
         }
 
-        /* 紀錄清單頁首與導出按鈕 */
         .list-header {
             display: flex;
             justify-content: space-between;
@@ -163,18 +163,14 @@
         }
 
         .btn-export {
-            background-color: #10b981;
+            background-color: var(--success);
             color: white;
             border: none;
-            padding: 8px 14px;
+            padding: 8px 12px;
             border-radius: 6px;
             font-weight: 600;
             font-size: 0.85rem;
             cursor: pointer;
-        }
-
-        .btn-export:active {
-            background-color: #059669;
         }
 
         /* 歷史紀錄清單 */
@@ -200,11 +196,19 @@
             gap: 4px;
         }
 
-        .record-tag {
-            display: inline-block;
+        .record-tags {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .tag-chip {
+            background-color: #eff6ff;
+            color: var(--primary);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
             font-weight: bold;
-            font-size: 1rem;
-            color: var(--text-main);
         }
 
         .record-date {
@@ -234,6 +238,16 @@
             padding: 20px 0;
             font-size: 0.9rem;
         }
+
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-top: 2px;
+            display: inline-block;
+        }
+        .status-success { background-color: #d1fae5; color: #065f46; }
+        .status-fail { background-color: #fee2e2; color: #991b1b; }
     </style>
 </head>
 <body>
@@ -241,6 +255,14 @@
     <header>
         <h1>📦 耗材與寄件紀錄器</h1>
     </header>
+
+    <!-- Google Sheets 設定區塊 -->
+    <div class="card">
+        <div class="form-group" style="margin-bottom: 0;">
+            <label for="sheet-url">Google Sheets Web App 網址（自動同步）</label>
+            <input type="url" id="sheet-url" placeholder="貼上 Apps Script 部署網址 (https://script.google.com/...)">
+        </div>
+    </div>
 
     <!-- 輸入區塊 -->
     <div class="card">
@@ -250,11 +272,12 @@
         </div>
 
         <div class="form-group">
-            <label>項目</label>
+            <label>項目（可多選）</label>
             <div class="category-grid">
-                <button type="button" class="cat-btn active" data-cat="箱子">箱子</button>
+                <button type="button" class="cat-btn" data-cat="箱子">箱子</button>
                 <button type="button" class="cat-btn" data-cat="袋子">袋子</button>
                 <button type="button" class="cat-btn" data-cat="寄出">寄出</button>
+                <button type="button" class="cat-btn" data-cat="運費">運費</button>
                 <button type="button" class="cat-btn" data-cat="郵寄">郵寄</button>
             </div>
         </div>
@@ -268,23 +291,23 @@
             </div>
         </div>
 
-        <button type="button" class="btn-submit" id="btn-add">新增紀錄</button>
+        <button type="button" class="btn-submit" id="btn-add">新增並同步紀錄</button>
     </div>
 
-    <!-- 紀錄顯示與導出區塊 -->
+    <!-- 紀錄顯示區塊 -->
     <div class="card">
         <div class="list-header">
             <label style="margin: 0;">歷史紀錄</label>
             <button type="button" class="btn-export" id="btn-export">匯出 CSV</button>
         </div>
         <ul class="record-list" id="record-list">
-            <!-- 歷史紀錄動態渲染區域 -->
+            <!-- 動態渲染區域 -->
         </ul>
     </div>
 
     <script>
-        // DOM 元件選擇
         const dateInput = document.getElementById('record-date');
+        const sheetUrlInput = document.getElementById('sheet-url');
         const catButtons = document.querySelectorAll('.cat-btn');
         const qtyInput = document.getElementById('record-qty');
         const btnMinus = document.getElementById('btn-minus');
@@ -293,11 +316,10 @@
         const btnExport = document.getElementById('btn-export');
         const recordList = document.getElementById('record-list');
 
-        // 狀態管理
-        let selectedCategory = '箱子';
+        let selectedCategories = [];
         let records = JSON.parse(localStorage.getItem('shipment_records')) || [];
 
-        // 初始化日期為「今天」
+        // 初始化日期與 Google Sheet 網址
         const getTodayString = () => {
             const today = new Date();
             const year = today.getFullYear();
@@ -306,17 +328,28 @@
             return `${year}-${month}-${day}`;
         };
         dateInput.value = getTodayString();
+        sheetUrlInput.value = localStorage.getItem('google_sheet_url') || '';
 
-        // 分類按鈕切換
+        // 儲存 Google Sheet 網址
+        sheetUrlInput.addEventListener('change', () => {
+            localStorage.setItem('google_sheet_url', sheetUrlInput.value.trim());
+        });
+
+        // 項目多選按鈕邏輯
         catButtons.forEach(btn => {
             btn.addEventListener('click', () => {
-                catButtons.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                selectedCategory = btn.dataset.cat;
+                const cat = btn.dataset.cat;
+                if (selectedCategories.includes(cat)) {
+                    selectedCategories = selectedCategories.filter(c => c !== cat);
+                    btn.classList.remove('active');
+                } else {
+                    selectedCategories.push(cat);
+                    btn.classList.add('active');
+                }
             });
         });
 
-        // 數量調整 (+/-)
+        // 數量加減
         btnMinus.addEventListener('click', () => {
             let val = parseInt(qtyInput.value) || 1;
             if (val > 1) qtyInput.value = val - 1;
@@ -328,7 +361,7 @@
         });
 
         // 新增紀錄
-        btnAdd.addEventListener('click', () => {
+        btnAdd.addEventListener('click', async () => {
             const date = dateInput.value;
             const qty = parseInt(qtyInput.value) || 1;
 
@@ -336,19 +369,51 @@
                 alert('請選擇日期');
                 return;
             }
+            if (selectedCategories.length === 0) {
+                alert('請至少選擇一個項目！');
+                return;
+            }
 
+            const categoryString = selectedCategories.join('、');
             const newRecord = {
                 id: Date.now(),
                 date: date,
-                category: selectedCategory,
-                quantity: qty
+                category: categoryString,
+                quantity: qty,
+                synced: false
             };
 
-            records.unshift(newRecord); // 新紀錄插在最前面
+            // 嘗試發送至 Google Sheets
+            const sheetUrl = sheetUrlInput.value.trim();
+            if (sheetUrl) {
+                btnAdd.disabled = true;
+                btnAdd.innerText = '同步中...';
+                try {
+                    await fetch(sheetUrl, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            date: newRecord.date,
+                            category: newRecord.category,
+                            quantity: newRecord.quantity
+                        })
+                    });
+                    newRecord.synced = true;
+                } catch (e) {
+                    console.error('Google Sheet 同步失敗:', e);
+                }
+                btnAdd.disabled = false;
+                btnAdd.innerText = '新增並同步紀錄';
+            }
+
+            records.unshift(newRecord);
             saveAndRender();
 
-            // 重置數量為 1
+            // 重置欄位
             qtyInput.value = 1;
+            selectedCategories = [];
+            catButtons.forEach(b => b.classList.remove('active'));
         });
 
         // 刪除紀錄
@@ -357,13 +422,11 @@
             saveAndRender();
         }
 
-        // 儲存至 LocalStorage 並繪製 UI
         function saveAndRender() {
             localStorage.setItem('shipment_records', JSON.stringify(records));
             renderList();
         }
 
-        // 渲染清單
         function renderList() {
             recordList.innerHTML = '';
 
@@ -375,10 +438,16 @@
             records.forEach(item => {
                 const li = document.createElement('li');
                 li.className = 'record-item';
+                
+                const tagsHtml = item.category.split('、').map(c => `<span class="tag-chip">${c}</span>`).join('');
+                const syncBadge = item.synced 
+                    ? `<span class="status-badge status-success">已同步試算表</span>`
+                    : (sheetUrlInput.value ? `<span class="status-badge status-fail">未同步</span>` : '');
+
                 li.innerHTML = `
                     <div class="record-info">
-                        <span class="record-tag">${item.category}</span>
-                        <span class="record-date">${item.date}</span>
+                        <div class="record-tags">${tagsHtml}</div>
+                        <span class="record-date">${item.date} ${syncBadge}</span>
                     </div>
                     <div style="display: flex; align-items: center;">
                         <span class="record-qty">${item.quantity} 個</span>
@@ -389,7 +458,7 @@
             });
         }
 
-        // 匯出 CSV 功能 (包含 UTF-8 BOM 避免 Excel 開啟亂碼)
+        // 匯出 CSV
         btnExport.addEventListener('click', () => {
             if (records.length === 0) {
                 alert('目前沒有資料可供匯出！');
@@ -398,7 +467,7 @@
 
             let csvContent = "\uFEFF日期,項目,數量\n";
             records.forEach(r => {
-                csvContent += `${r.date},${r.category},${r.quantity}\n`;
+                csvContent += `${r.date},"${r.category}",${r.quantity}\n`;
             });
 
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -412,7 +481,6 @@
             URL.revokeObjectURL(url);
         });
 
-        // 初始化渲染
         renderList();
     </script>
 </body>
