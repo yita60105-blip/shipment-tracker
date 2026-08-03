@@ -6,12 +6,13 @@
     <title>耗材與寄件紀錄器</title>
     <style>
         :root {
-            --bg-color: #f4f6f8;
+            --bg-color: #f3f4f6;
             --card-bg: #ffffff;
             --primary: #2563eb;
             --primary-hover: #1d4ed8;
-            --danger: #ef4444;
             --success: #10b981;
+            --success-hover: #059669;
+            --danger: #ef4444;
             --text-main: #1f2937;
             --text-muted: #6b7280;
             --border-color: #e5e7eb;
@@ -41,8 +42,9 @@
         }
 
         h1 {
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             font-weight: 700;
+            color: var(--text-main);
         }
 
         .card {
@@ -54,20 +56,24 @@
         }
 
         .form-group {
-            margin-bottom: 16px;
+            margin-bottom: 14px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
         }
 
         label {
             display: block;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             font-weight: 600;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             color: var(--text-muted);
         }
 
-        input[type="date"], input[type="url"], input[type="number"] {
+        input[type="date"], input[type="url"] {
             width: 100%;
-            height: 48px;
+            height: 46px;
             padding: 0 12px;
             border: 1px solid var(--border-color);
             border-radius: 8px;
@@ -76,60 +82,7 @@
             background-color: #fff;
         }
 
-        /* 耗材獨立計數區塊 */
-        .item-counter-card {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 12px;
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            margin-bottom: 8px;
-            background-color: #fff;
-            transition: all 0.15s ease;
-        }
-
-        .item-counter-card.active {
-            border-color: var(--primary);
-            background-color: #eff6ff;
-        }
-
-        .item-label {
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--text-main);
-        }
-
-        .counter-controls {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-mini-qty {
-            width: 36px;
-            height: 36px;
-            border: none;
-            background-color: #e5e7eb;
-            font-size: 1.2rem;
-            font-weight: bold;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
-        .input-mini-qty {
-            width: 50px;
-            height: 36px;
-            text-align: center;
-            font-size: 1rem;
-            font-weight: bold;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            outline: none;
-            background: #fff;
-        }
-
-        /* 其他標籤網格 */
+        /* 項目單選按鈕網格 */
         .category-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -137,11 +90,11 @@
         }
 
         .cat-btn {
-            height: 44px;
+            height: 48px;
             border: 2px solid var(--border-color);
             background-color: #fff;
             border-radius: 8px;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             font-weight: 600;
             color: var(--text-main);
             cursor: pointer;
@@ -154,35 +107,111 @@
             color: var(--primary);
         }
 
-        /* 郵局運費自訂金額輸入區域 */
-        .post-price-box {
-            display: none;
-            margin-top: 10px;
-            padding: 12px;
-            background-color: #eff6ff;
-            border-radius: 8px;
-            border: 1px solid var(--primary);
+        /* 數量選擇與加減號 */
+        .counter-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .btn-submit {
+        .btn-qty {
+            width: 52px;
+            height: 48px;
+            border: none;
+            background-color: #e5e7eb;
+            font-size: 1.4rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--text-main);
+        }
+
+        .btn-qty:active {
+            background-color: #d1d5db;
+        }
+
+        .input-qty {
+            flex: 1;
+            height: 48px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            outline: none;
+        }
+
+        /* 按鈕樣式 */
+        .btn-add-item {
+            width: 100%;
+            height: 46px;
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn-submit-all {
             width: 100%;
             height: 52px;
-            background-color: var(--primary);
+            background-color: var(--success);
             color: white;
             border: none;
             border-radius: 8px;
             font-size: 1.1rem;
             font-weight: 700;
             cursor: pointer;
+            margin-top: 12px;
         }
 
-        .list-header {
+        .btn-submit-all:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        /* 暫存清單區塊 */
+        .pending-list {
+            list-style: none;
+            margin-top: 8px;
+        }
+
+        .pending-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
+            padding: 10px 12px;
+            background-color: #f9fafb;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 8px;
         }
 
+        .pending-tag {
+            font-weight: 700;
+            color: var(--text-main);
+            font-size: 0.95rem;
+        }
+
+        .pending-qty {
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 1.05rem;
+        }
+
+        .btn-del-single {
+            background-color: transparent;
+            border: none;
+            color: var(--danger);
+            font-size: 0.85rem;
+            cursor: pointer;
+            padding: 4px 8px;
+        }
+
+        /* 歷史紀錄清單 */
         .record-list {
             list-style: none;
         }
@@ -202,12 +231,12 @@
         .tag-chip {
             background-color: #eff6ff;
             color: var(--primary);
-            padding: 2px 8px;
-            border-radius: 4px;
+            padding: 3px 8px;
+            border-radius: 6px;
             font-size: 0.85rem;
             font-weight: bold;
-            margin-right: 4px;
             display: inline-block;
+            margin-right: 4px;
             margin-bottom: 4px;
         }
 
@@ -216,20 +245,11 @@
             color: var(--text-muted);
         }
 
-        .btn-delete {
-            background-color: transparent;
-            border: none;
-            color: var(--danger);
-            font-size: 0.9rem;
-            padding: 6px 10px;
-            cursor: pointer;
-        }
-
         .empty-state {
             text-align: center;
             color: var(--text-muted);
-            padding: 20px 0;
-            font-size: 0.9rem;
+            padding: 16px 0;
+            font-size: 0.88rem;
         }
     </style>
 </head>
@@ -239,83 +259,76 @@
         <h1>📦 耗材與寄件紀錄器</h1>
     </header>
 
+    <!-- API 網址設定區塊 -->
     <div class="card">
-        <div class="form-group" style="margin-bottom: 0;">
-            <label for="sheet-url">Google Sheets Web App 網址（自動記憶）</label>
+        <div class="form-group">
+            <label for="sheet-url">Google Sheets Web App 網址</label>
             <input type="url" id="sheet-url" placeholder="貼上 Web App 網址 (https://script.google.com/...)">
         </div>
     </div>
 
+    <!-- 項目與數量新增區塊 -->
     <div class="card">
         <div class="form-group">
-            <label for="record-date">日期</label>
+            <label for="record-date">選擇日期</label>
             <input type="date" id="record-date">
         </div>
 
-        <!-- 獨立數量選取區 -->
         <div class="form-group">
-            <label>耗材選擇與數量</label>
-            
-            <div class="item-counter-card" id="card-箱子">
-                <span class="item-label">📦 箱子</span>
-                <div class="counter-controls">
-                    <button type="button" class="btn-mini-qty" onclick="adjustQty('箱子', -1)">-</button>
-                    <input type="number" id="qty-箱子" class="input-mini-qty" value="0" min="0" onchange="updateCardStatus('箱子')">
-                    <button type="button" class="btn-mini-qty" onclick="adjustQty('箱子', 1)">+</button>
-                </div>
-            </div>
-
-            <div class="item-counter-card" id="card-袋子">
-                <span class="item-label">🛍️ 袋子</span>
-                <div class="counter-controls">
-                    <button type="button" class="btn-mini-qty" onclick="adjustQty('袋子', -1)">-</button>
-                    <input type="number" id="qty-袋子" class="input-mini-qty" value="0" min="0" onchange="updateCardStatus('袋子')">
-                    <button type="button" class="btn-mini-qty" onclick="adjustQty('袋子', 1)">+</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- 其他類別切換 -->
-        <div class="form-group">
-            <label>其他項目（可多選）</label>
+            <label>1. 選擇項目</label>
             <div class="category-grid">
+                <button type="button" class="cat-btn active" data-cat="箱子">箱子</button>
+                <button type="button" class="cat-btn" data-cat="袋子">袋子</button>
                 <button type="button" class="cat-btn" data-cat="郵局">郵局</button>
                 <button type="button" class="cat-btn" data-cat="711運費">711運費</button>
-                <button type="button" class="cat-btn" id="btn-post-fee">郵局運費</button>
-            </div>
-
-            <!-- 郵局運費金額輸入區域 -->
-            <div class="post-price-box" id="post-price-box">
-                <label for="post-fee-amount" style="margin-bottom: 4px; color: var(--primary);">請輸入郵局運費金額 ($NT)：</label>
-                <input type="number" id="post-fee-amount" placeholder="例如：80" min="0">
+                <button type="button" class="cat-btn" data-cat="郵局運費">郵局運費</button>
             </div>
         </div>
 
-        <button type="button" class="btn-submit" id="btn-add">新增並寫入試算表</button>
+        <div class="form-group">
+            <label for="record-qty">2. 設定數量 / 金額</label>
+            <div class="counter-container">
+                <button type="button" class="btn-qty" id="btn-minus">-</button>
+                <input type="number" id="record-qty" class="input-qty" value="1" min="1">
+                <button type="button" class="btn-qty" id="btn-plus">+</button>
+            </div>
+        </div>
+
+        <button type="button" class="btn-add-item" id="btn-add-item">＋ 加入當前紀錄清單</button>
     </div>
 
+    <!-- 待送出紀錄清單（暫存區） -->
     <div class="card">
-        <div class="list-header">
-            <label style="margin: 0;">歷史紀錄</label>
-        </div>
+        <label style="margin-bottom: 8px;">🛒 當前準備寫入清單</label>
+        <ul class="pending-list" id="pending-list">
+            <!-- 動態加入項目 -->
+        </ul>
+        <button type="button" class="btn-submit-all" id="btn-submit-all" disabled>送出並寫入 Google 試算表</button>
+    </div>
+
+    <!-- 歷史紀錄 -->
+    <div class="card">
+        <label style="margin-bottom: 12px;">📜 本地歷史紀錄</label>
         <ul class="record-list" id="record-list"></ul>
     </div>
 
     <script>
         const dateInput = document.getElementById('record-date');
         const sheetUrlInput = document.getElementById('sheet-url');
-        const catButtons = document.querySelectorAll('.cat-btn:not(#btn-post-fee)');
-        const btnAdd = document.getElementById('btn-add');
+        const catButtons = document.querySelectorAll('.cat-btn');
+        const qtyInput = document.getElementById('record-qty');
+        const btnMinus = document.getElementById('btn-minus');
+        const btnPlus = document.getElementById('btn-plus');
+        const btnAddItem = document.getElementById('btn-add-item');
+        const btnSubmitAll = document.getElementById('btn-submit-all');
+        const pendingList = document.getElementById('pending-list');
         const recordList = document.getElementById('record-list');
-        const postFeeBtn = document.getElementById('btn-post-fee');
-        const postPriceBox = document.getElementById('post-price-box');
-        const postFeeAmountInput = document.getElementById('post-fee-amount');
 
-        let selectedCategories = [];
-        let isPostFeeSelected = false;
-        let records = JSON.parse(localStorage.getItem('shipment_records')) || [];
+        let selectedCategory = '箱子';
+        let pendingItems = [];
+        let historyRecords = JSON.parse(localStorage.getItem('shipment_records_v2')) || [];
 
-        // 初始化日期與自動讀取記憶網址
+        // 初始化日期與網址
         const getTodayString = () => {
             const today = new Date();
             const year = today.getFullYear();
@@ -326,172 +339,155 @@
         dateInput.value = getTodayString();
         sheetUrlInput.value = localStorage.getItem('google_sheet_url') || '';
 
-        // 輸入即時記憶網址
-        sheetUrlInput.addEventListener('input', () => {
+        sheetUrlInput.addEventListener('change', () => {
             localStorage.setItem('google_sheet_url', sheetUrlInput.value.trim());
         });
 
-        // 獨立耗材數量微調邏輯
-        function adjustQty(item, delta) {
-            const input = document.getElementById(`qty-${item}`);
-            let val = parseInt(input.value) || 0;
-            val = Math.max(0, val + delta);
-            input.value = val;
-            updateCardStatus(item);
-        }
-
-        // 更新耗材外觀卡片選取狀態
-        function updateCardStatus(item) {
-            const input = document.getElementById(`qty-${item}`);
-            const card = document.getElementById(`card-${item}`);
-            const val = parseInt(input.value) || 0;
-            
-            if (val > 0) {
-                card.classList.add('active');
-            } else {
-                card.classList.remove('active');
-            }
-        }
-
-        // 一般標籤切換
+        // 選擇單一項目
         catButtons.forEach(btn => {
             btn.addEventListener('click', () => {
-                const cat = btn.dataset.cat;
-                if (selectedCategories.includes(cat)) {
-                    selectedCategories = selectedCategories.filter(c => c !== cat);
-                    btn.classList.remove('active');
-                } else {
-                    selectedCategories.push(cat);
-                    btn.classList.add('active');
-                }
+                catButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedCategory = btn.dataset.cat;
             });
         });
 
-        // 郵局運費按鈕獨立點擊邏輯
-        postFeeBtn.addEventListener('click', () => {
-            isPostFeeSelected = !isPostFeeSelected;
-            if (isPostFeeSelected) {
-                postFeeBtn.classList.add('active');
-                postPriceBox.style.display = 'block';
-                postFeeAmountInput.focus();
+        // 數量調整
+        btnMinus.addEventListener('click', () => {
+            let val = parseInt(qtyInput.value) || 1;
+            if (val > 1) qtyInput.value = val - 1;
+        });
+
+        btnPlus.addEventListener('click', () => {
+            let val = parseInt(qtyInput.value) || 1;
+            qtyInput.value = val + 1;
+        });
+
+        // 加入暫存清單（一個一個加）
+        btnAddItem.addEventListener('click', () => {
+            const qty = parseInt(qtyInput.value) || 1;
+            
+            // 檢查是否已在暫存中，若有則直接累加數量
+            const existingIndex = pendingItems.findIndex(item => item.category === selectedCategory);
+            if (existingIndex > -1) {
+                pendingItems[existingIndex].quantity += qty;
             } else {
-                postFeeBtn.classList.remove('active');
-                postPriceBox.style.display = 'none';
-                postFeeAmountInput.value = '';
+                pendingItems.push({
+                    id: Date.now(),
+                    category: selectedCategory,
+                    quantity: qty
+                });
             }
+
+            qtyInput.value = 1;
+            renderPendingList();
         });
 
-        // 新增並送出紀錄
-        btnAdd.addEventListener('click', async () => {
-            const date = dateInput.value;
-            if (!date) return alert('請選擇日期');
-
-            const items = [];
-
-            // 讀取箱子與袋子的數量
-            ['箱子', '袋子'].forEach(item => {
-                const qty = parseInt(document.getElementById(`qty-${item}`).value) || 0;
-                if (qty > 0) {
-                    items.push({ category: item, quantity: qty });
-                }
-            });
-
-            // 讀取其他選取的標籤
-            selectedCategories.forEach(cat => {
-                items.push({ category: cat, quantity: 1 });
-            });
-
-            // 讀取郵局運費與金額
-            if (isPostFeeSelected) {
-                const price = postFeeAmountInput.value.trim();
-                const categoryName = price ? `郵局運費 $${price}` : '郵局運費';
-                items.push({ category: categoryName, quantity: 1 });
-            }
-
-            if (items.length === 0) {
-                return alert('請至少設定一個耗材數量或選擇一個項目！');
-            }
-
-            const newRecord = {
-                id: Date.now(),
-                date: date,
-                items: items
-            };
-
-            const sheetUrl = sheetUrlInput.value.trim();
-            if (sheetUrl) {
-                btnAdd.disabled = true;
-                btnAdd.innerText = '同步中...';
-                try {
-                    await fetch(sheetUrl, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ date: date, items: items })
-                    });
-                    alert('紀錄已成功新增並寫入試算表！');
-                } catch (e) {
-                    console.error('同步失敗:', e);
-                    alert('寫入試算表失敗，請檢查網址或網路連線。');
-                }
-                btnAdd.disabled = false;
-                btnAdd.innerText = '新增並寫入試算表';
-            }
-
-            records.unshift(newRecord);
-            saveAndRender();
-
-            // 重設輸入框狀態
-            ['箱子', '袋子'].forEach(item => {
-                document.getElementById(`qty-${item}`).value = 0;
-                updateCardStatus(item);
-            });
-            selectedCategories = [];
-            catButtons.forEach(b => b.classList.remove('active'));
-            isPostFeeSelected = false;
-            postFeeBtn.classList.remove('active');
-            postPriceBox.style.display = 'none';
-            postFeeAmountInput.value = '';
-        });
-
-        function deleteRecord(id) {
-            records = records.filter(item => item.id !== id);
-            saveAndRender();
+        // 刪除暫存項目
+        function deletePendingItem(id) {
+            pendingItems = pendingItems.filter(item => item.id !== id);
+            renderPendingList();
         }
 
-        function saveAndRender() {
-            localStorage.setItem('shipment_records', JSON.stringify(records));
-            renderList();
-        }
+        // 渲染暫存清單
+        function renderPendingList() {
+            pendingList.innerHTML = '';
 
-        function renderList() {
-            recordList.innerHTML = '';
-            if (records.length === 0) {
-                recordList.innerHTML = '<div class="empty-state">目前尚無紀錄</div>';
+            if (pendingItems.length === 0) {
+                pendingList.innerHTML = '<div class="empty-state">尚未加入任何項目，請點擊上方按鈕新增</div>';
+                btnSubmitAll.disabled = true;
                 return;
             }
 
-            records.forEach(item => {
+            btnSubmitAll.disabled = false;
+            pendingItems.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'pending-item';
+                li.innerHTML = `
+                    <div>
+                        <span class="pending-tag">${item.category}</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap: 10px;">
+                        <span class="pending-qty">+${item.quantity}</span>
+                        <button class="btn-del-single" onclick="deletePendingItem(${item.id})">移除</button>
+                    </div>
+                `;
+                pendingList.appendChild(li);
+            });
+        }
+
+        // 送出並寫入 Google 試算表
+        btnSubmitAll.addEventListener('click', async () => {
+            const date = dateInput.value;
+            if (!date) return alert('請選擇日期');
+            if (pendingItems.length === 0) return alert('清單內沒有項目');
+
+            const sheetUrl = sheetUrlInput.value.trim();
+            if (!sheetUrl) return alert('請先填入 Google Sheets Web App 網址！');
+
+            btnSubmitAll.disabled = true;
+            btnSubmitAll.innerText = '正在寫入 Google 試算表...';
+
+            const payload = {
+                date: date,
+                items: pendingItems
+            };
+
+            try {
+                await fetch(sheetUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                // 儲存至本地歷史紀錄
+                historyRecords.unshift({
+                    id: Date.now(),
+                    date: date,
+                    items: [...pendingItems]
+                });
+                localStorage.setItem('shipment_records_v2', JSON.stringify(historyRecords));
+                renderHistoryList();
+
+                // 清空暫存
+                pendingItems = [];
+                renderPendingList();
+                alert('✅ 已成功寫入 Google 試算表！');
+            } catch (e) {
+                console.error('寫入失敗:', e);
+                alert('❌ 寫入失敗，請檢查網路或 API 網址設定');
+            }
+
+            btnSubmitAll.disabled = false;
+            btnSubmitAll.innerText = '送出並寫入 Google 試算表';
+        });
+
+        // 渲染歷史紀錄
+        function renderHistoryList() {
+            recordList.innerHTML = '';
+            if (historyRecords.length === 0) {
+                recordList.innerHTML = '<div class="empty-state">目前尚無歷史紀錄</div>';
+                return;
+            }
+
+            historyRecords.forEach(item => {
                 const li = document.createElement('li');
                 li.className = 'record-item';
-                
-                const tagsHtml = item.items.map(i => {
-                    const qtyDisplay = i.quantity > 1 ? ` x${i.quantity}` : '';
-                    return `<span class="tag-chip">${i.category}${qtyDisplay}</span>`;
-                }).join('');
-
+                const tagsHtml = item.items.map(i => `<span class="tag-chip">${i.category} × ${i.quantity}</span>`).join('');
                 li.innerHTML = `
                     <div>
                         <div>${tagsHtml}</div>
                         <div class="record-date">${item.date}</div>
                     </div>
-                    <button class="btn-delete" onclick="deleteRecord(${item.id})">刪除</button>
                 `;
                 recordList.appendChild(li);
             });
         }
 
-        renderList();
+        // 初始化
+        renderPendingList();
+        renderHistoryList();
     </script>
 </body>
 </html>
