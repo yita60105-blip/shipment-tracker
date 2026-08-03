@@ -154,18 +154,14 @@
             color: var(--primary);
         }
 
-        /* 郵局運費自訂金額輸入框 */
+        /* 郵局運費自訂金額輸入區域 */
         .post-price-box {
             display: none;
             margin-top: 10px;
-            padding: 10px;
-            background-color: #f8fafc;
+            padding: 12px;
+            background-color: #eff6ff;
             border-radius: 8px;
-            border: 1px dashed var(--primary);
-        }
-
-        .post-price-box.show {
-            display: block;
+            border: 1px solid var(--primary);
         }
 
         .btn-submit {
@@ -285,12 +281,12 @@
             <div class="category-grid">
                 <button type="button" class="cat-btn" data-cat="郵局">郵局</button>
                 <button type="button" class="cat-btn" data-cat="711運費">711運費</button>
-                <button type="button" class="cat-btn" data-cat="郵局運費" id="btn-post-fee">郵局運費</button>
+                <button type="button" class="cat-btn" id="btn-post-fee">郵局運費</button>
             </div>
 
             <!-- 郵局運費金額輸入區域 -->
             <div class="post-price-box" id="post-price-box">
-                <label for="post-fee-amount" style="margin-bottom: 4px;">郵局運費金額 ($NT)</label>
+                <label for="post-fee-amount" style="margin-bottom: 4px; color: var(--primary);">請輸入郵局運費金額 ($NT)：</label>
                 <input type="number" id="post-fee-amount" placeholder="例如：80" min="0">
             </div>
         </div>
@@ -308,7 +304,7 @@
     <script>
         const dateInput = document.getElementById('record-date');
         const sheetUrlInput = document.getElementById('sheet-url');
-        const catButtons = document.querySelectorAll('.cat-btn');
+        const catButtons = document.querySelectorAll('.cat-btn:not(#btn-post-fee)');
         const btnAdd = document.getElementById('btn-add');
         const recordList = document.getElementById('record-list');
         const postFeeBtn = document.getElementById('btn-post-fee');
@@ -316,6 +312,7 @@
         const postFeeAmountInput = document.getElementById('post-fee-amount');
 
         let selectedCategories = [];
+        let isPostFeeSelected = false;
         let records = JSON.parse(localStorage.getItem('shipment_records')) || [];
 
         // 初始化日期與自動讀取記憶網址
@@ -356,7 +353,7 @@
             }
         }
 
-        // 其他項目（標籤）選取狀態切換
+        // 一般標籤切換
         catButtons.forEach(btn => {
             btn.addEventListener('click', () => {
                 const cat = btn.dataset.cat;
@@ -367,18 +364,21 @@
                     selectedCategories.push(cat);
                     btn.classList.add('active');
                 }
-
-                // 針對「郵局運費」顯示或隱藏金額輸入框
-                if (cat === '郵局運費') {
-                    if (selectedCategories.includes('郵局運費')) {
-                        postPriceBox.classList.add('show');
-                        postFeeAmountInput.focus();
-                    } else {
-                        postPriceBox.classList.remove('show');
-                        postFeeAmountInput.value = '';
-                    }
-                }
             });
+        });
+
+        // 郵局運費按鈕獨立點擊邏輯
+        postFeeBtn.addEventListener('click', () => {
+            isPostFeeSelected = !isPostFeeSelected;
+            if (isPostFeeSelected) {
+                postFeeBtn.classList.add('active');
+                postPriceBox.style.display = 'block';
+                postFeeAmountInput.focus();
+            } else {
+                postFeeBtn.classList.remove('active');
+                postPriceBox.style.display = 'none';
+                postFeeAmountInput.value = '';
+            }
         });
 
         // 新增並送出紀錄
@@ -396,16 +396,17 @@
                 }
             });
 
-            // 讀取其他選取的標籤與運費金額
+            // 讀取其他選取的標籤
             selectedCategories.forEach(cat => {
-                if (cat === '郵局運費') {
-                    const price = postFeeAmountInput.value.trim();
-                    const categoryName = price ? `郵局運費 $${price}` : '郵局運費';
-                    items.push({ category: categoryName, quantity: 1 });
-                } else {
-                    items.push({ category: cat, quantity: 1 });
-                }
+                items.push({ category: cat, quantity: 1 });
             });
+
+            // 讀取郵局運費與金額
+            if (isPostFeeSelected) {
+                const price = postFeeAmountInput.value.trim();
+                const categoryName = price ? `郵局運費 $${price}` : '郵局運費';
+                items.push({ category: categoryName, quantity: 1 });
+            }
 
             if (items.length === 0) {
                 return alert('請至少設定一個耗材數量或選擇一個項目！');
@@ -447,7 +448,9 @@
             });
             selectedCategories = [];
             catButtons.forEach(b => b.classList.remove('active'));
-            postPriceBox.classList.remove('show');
+            isPostFeeSelected = false;
+            postFeeBtn.classList.remove('active');
+            postPriceBox.style.display = 'none';
             postFeeAmountInput.value = '';
         });
 
