@@ -43,14 +43,13 @@
         h1 {
             font-size: 1.4rem;
             font-weight: 700;
-            color: var(--text-main);
         }
 
         .card {
             background: var(--card-bg);
             border-radius: var(--radius);
             padding: 16px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
             margin-bottom: 16px;
         }
 
@@ -77,7 +76,6 @@
             background-color: #fff;
         }
 
-        /* 多選項目按鈕區 */
         .category-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -89,7 +87,7 @@
             border: 2px solid var(--border-color);
             background-color: #fff;
             border-radius: 8px;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-weight: 600;
             color: var(--text-main);
             cursor: pointer;
@@ -102,7 +100,6 @@
             color: var(--primary);
         }
 
-        /* 數量調整器 */
         .counter-container {
             display: flex;
             align-items: center;
@@ -119,11 +116,6 @@
             font-weight: bold;
             border-radius: 8px;
             cursor: pointer;
-            color: var(--text-main);
-        }
-
-        .btn-qty:active {
-            background-color: #d1d5db;
         }
 
         .input-qty {
@@ -137,7 +129,6 @@
             outline: none;
         }
 
-        /* 主要按鈕 */
         .btn-submit {
             width: 100%;
             height: 52px;
@@ -148,11 +139,6 @@
             font-size: 1.1rem;
             font-weight: 700;
             cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .btn-submit:active {
-            background-color: var(--primary-hover);
         }
 
         .list-header {
@@ -162,18 +148,6 @@
             margin-bottom: 12px;
         }
 
-        .btn-export {
-            background-color: var(--success);
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            cursor: pointer;
-        }
-
-        /* 歷史紀錄清單 */
         .record-list {
             list-style: none;
         }
@@ -190,18 +164,6 @@
             border-bottom: none;
         }
 
-        .record-info {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .record-tags {
-            display: flex;
-            gap: 4px;
-            flex-wrap: wrap;
-        }
-
         .tag-chip {
             background-color: #eff6ff;
             color: var(--primary);
@@ -209,6 +171,7 @@
             border-radius: 4px;
             font-size: 0.85rem;
             font-weight: bold;
+            margin-right: 4px;
         }
 
         .record-date {
@@ -218,8 +181,7 @@
 
         .record-qty {
             font-weight: bold;
-            font-size: 1.1rem;
-            margin-right: 12px;
+            font-size: 1rem;
             color: var(--primary);
         }
 
@@ -238,16 +200,6 @@
             padding: 20px 0;
             font-size: 0.9rem;
         }
-
-        .status-badge {
-            font-size: 0.75rem;
-            padding: 2px 6px;
-            border-radius: 4px;
-            margin-top: 2px;
-            display: inline-block;
-        }
-        .status-success { background-color: #d1fae5; color: #065f46; }
-        .status-fail { background-color: #fee2e2; color: #991b1b; }
     </style>
 </head>
 <body>
@@ -256,15 +208,13 @@
         <h1>📦 耗材與寄件紀錄器</h1>
     </header>
 
-    <!-- Google Sheets 設定區塊 -->
     <div class="card">
         <div class="form-group" style="margin-bottom: 0;">
-            <label for="sheet-url">Google Sheets Web App 網址（自動同步）</label>
-            <input type="url" id="sheet-url" placeholder="貼上 Apps Script 部署網址 (https://script.google.com/...)">
+            <label for="sheet-url">Google Sheets Web App 網址</label>
+            <input type="url" id="sheet-url" placeholder="貼上 Web App 網址 (https://script.google.com/...)">
         </div>
     </div>
 
-    <!-- 輸入區塊 -->
     <div class="card">
         <div class="form-group">
             <label for="record-date">日期</label>
@@ -276,9 +226,9 @@
             <div class="category-grid">
                 <button type="button" class="cat-btn" data-cat="箱子">箱子</button>
                 <button type="button" class="cat-btn" data-cat="袋子">袋子</button>
-                <button type="button" class="cat-btn" data-cat="寄出">寄出</button>
-                <button type="button" class="cat-btn" data-cat="運費">運費</button>
-                <button type="button" class="cat-btn" data-cat="郵寄">郵寄</button>
+                <button type="button" class="cat-btn" data-cat="郵局">郵局</button>
+                <button type="button" class="cat-btn" data-cat="711運費">711運費</button>
+                <button type="button" class="cat-btn" data-cat="郵局運費">郵局運費</button>
             </div>
         </div>
 
@@ -291,18 +241,14 @@
             </div>
         </div>
 
-        <button type="button" class="btn-submit" id="btn-add">新增並同步紀錄</button>
+        <button type="button" class="btn-submit" id="btn-add">新增並寫入試算表</button>
     </div>
 
-    <!-- 紀錄顯示區塊 -->
     <div class="card">
         <div class="list-header">
             <label style="margin: 0;">歷史紀錄</label>
-            <button type="button" class="btn-export" id="btn-export">匯出 CSV</button>
         </div>
-        <ul class="record-list" id="record-list">
-            <!-- 動態渲染區域 -->
-        </ul>
+        <ul class="record-list" id="record-list"></ul>
     </div>
 
     <script>
@@ -313,13 +259,11 @@
         const btnMinus = document.getElementById('btn-minus');
         const btnPlus = document.getElementById('btn-plus');
         const btnAdd = document.getElementById('btn-add');
-        const btnExport = document.getElementById('btn-export');
         const recordList = document.getElementById('record-list');
 
         let selectedCategories = [];
         let records = JSON.parse(localStorage.getItem('shipment_records')) || [];
 
-        // 初始化日期與 Google Sheet 網址
         const getTodayString = () => {
             const today = new Date();
             const year = today.getFullYear();
@@ -330,12 +274,10 @@
         dateInput.value = getTodayString();
         sheetUrlInput.value = localStorage.getItem('google_sheet_url') || '';
 
-        // 儲存 Google Sheet 網址
         sheetUrlInput.addEventListener('change', () => {
             localStorage.setItem('google_sheet_url', sheetUrlInput.value.trim());
         });
 
-        // 項目多選按鈕邏輯
         catButtons.forEach(btn => {
             btn.addEventListener('click', () => {
                 const cat = btn.dataset.cat;
@@ -349,7 +291,6 @@
             });
         });
 
-        // 數量加減
         btnMinus.addEventListener('click', () => {
             let val = parseInt(qtyInput.value) || 1;
             if (val > 1) qtyInput.value = val - 1;
@@ -360,30 +301,20 @@
             qtyInput.value = val + 1;
         });
 
-        // 新增紀錄
         btnAdd.addEventListener('click', async () => {
             const date = dateInput.value;
             const qty = parseInt(qtyInput.value) || 1;
 
-            if (!date) {
-                alert('請選擇日期');
-                return;
-            }
-            if (selectedCategories.length === 0) {
-                alert('請至少選擇一個項目！');
-                return;
-            }
+            if (!date) return alert('請選擇日期');
+            if (selectedCategories.length === 0) return alert('請至少選擇一個項目！');
 
-            const categoryString = selectedCategories.join('、');
+            const items = selectedCategories.map(cat => ({ category: cat, quantity: qty }));
             const newRecord = {
                 id: Date.now(),
                 date: date,
-                category: categoryString,
-                quantity: qty,
-                synced: false
+                items: items
             };
 
-            // 嘗試發送至 Google Sheets
             const sheetUrl = sheetUrlInput.value.trim();
             if (sheetUrl) {
                 btnAdd.disabled = true;
@@ -393,30 +324,23 @@
                         method: 'POST',
                         mode: 'no-cors',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            date: newRecord.date,
-                            category: newRecord.category,
-                            quantity: newRecord.quantity
-                        })
+                        body: JSON.stringify({ date: date, items: items })
                     });
-                    newRecord.synced = true;
                 } catch (e) {
-                    console.error('Google Sheet 同步失敗:', e);
+                    console.error('同步失敗:', e);
                 }
                 btnAdd.disabled = false;
-                btnAdd.innerText = '新增並同步紀錄';
+                btnAdd.innerText = '新增並寫入試算表';
             }
 
             records.unshift(newRecord);
             saveAndRender();
 
-            // 重置欄位
             qtyInput.value = 1;
             selectedCategories = [];
             catButtons.forEach(b => b.classList.remove('active'));
         });
 
-        // 刪除紀錄
         function deleteRecord(id) {
             records = records.filter(item => item.id !== id);
             saveAndRender();
@@ -429,7 +353,6 @@
 
         function renderList() {
             recordList.innerHTML = '';
-
             if (records.length === 0) {
                 recordList.innerHTML = '<div class="empty-state">目前尚無紀錄</div>';
                 return;
@@ -439,47 +362,18 @@
                 const li = document.createElement('li');
                 li.className = 'record-item';
                 
-                const tagsHtml = item.category.split('、').map(c => `<span class="tag-chip">${c}</span>`).join('');
-                const syncBadge = item.synced 
-                    ? `<span class="status-badge status-success">已同步試算表</span>`
-                    : (sheetUrlInput.value ? `<span class="status-badge status-fail">未同步</span>` : '');
+                const tagsHtml = item.items.map(i => `<span class="tag-chip">${i.category} x${i.quantity}</span>`).join('');
 
                 li.innerHTML = `
-                    <div class="record-info">
-                        <div class="record-tags">${tagsHtml}</div>
-                        <span class="record-date">${item.date} ${syncBadge}</span>
+                    <div>
+                        <div>${tagsHtml}</div>
+                        <div class="record-date">${item.date}</div>
                     </div>
-                    <div style="display: flex; align-items: center;">
-                        <span class="record-qty">${item.quantity} 個</span>
-                        <button class="btn-delete" onclick="deleteRecord(${item.id})">刪除</button>
-                    </div>
+                    <button class="btn-delete" onclick="deleteRecord(${item.id})">刪除</button>
                 `;
                 recordList.appendChild(li);
             });
         }
-
-        // 匯出 CSV
-        btnExport.addEventListener('click', () => {
-            if (records.length === 0) {
-                alert('目前沒有資料可供匯出！');
-                return;
-            }
-
-            let csvContent = "\uFEFF日期,項目,數量\n";
-            records.forEach(r => {
-                csvContent += `${r.date},"${r.category}",${r.quantity}\n`;
-            });
-
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `耗材與寄件紀錄_${getTodayString()}.csv`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        });
 
         renderList();
     </script>
