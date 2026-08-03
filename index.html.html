@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>耗材與寄件紀錄器</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f8;
+            --card-bg: #ffffff;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --danger: #ef4444;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border-color: #e5e7eb;
+            --radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 16px;
+            max-width: 500px;
+            margin: 0 auto;
+            padding-bottom: 40px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+        }
+
+        input[type="date"] {
+            width: 100%;
+            height: 48px;
+            padding: 0 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            background-color: #fff;
+        }
+
+        /* 項目選擇按鈕區 */
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .cat-btn {
+            height: 52px;
+            border: 2px solid var(--border-color);
+            background-color: #fff;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .cat-btn.active {
+            border-color: var(--primary);
+            background-color: #eff6ff;
+            color: var(--primary);
+        }
+
+        /* 數量調整器 */
+        .counter-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 48px;
+        }
+
+        .btn-qty {
+            width: 56px;
+            height: 48px;
+            border: none;
+            background-color: #e5e7eb;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            color: var(--text-main);
+        }
+
+        .btn-qty:active {
+            background-color: #d1d5db;
+        }
+
+        .input-qty {
+            width: 80px;
+            height: 48px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            outline: none;
+        }
+
+        /* 主要按鈕 */
+        .btn-submit {
+            width: 100%;
+            height: 52px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-submit:active {
+            background-color: var(--primary-hover);
+        }
+
+        /* 紀錄清單頁首與導出按鈕 */
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .btn-export {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .btn-export:active {
+            background-color: #059669;
+        }
+
+        /* 歷史紀錄清單 */
+        .record-list {
+            list-style: none;
+        }
+
+        .record-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .record-item:last-child {
+            border-bottom: none;
+        }
+
+        .record-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .record-tag {
+            display: inline-block;
+            font-weight: bold;
+            font-size: 1rem;
+            color: var(--text-main);
+        }
+
+        .record-date {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .record-qty {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-right: 12px;
+            color: var(--primary);
+        }
+
+        .btn-delete {
+            background-color: transparent;
+            border: none;
+            color: var(--danger);
+            font-size: 0.9rem;
+            padding: 6px 10px;
+            cursor: pointer;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 20px 0;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>📦 耗材與寄件紀錄器</h1>
+    </header>
+
+    <!-- 輸入區塊 -->
+    <div class="card">
+        <div class="form-group">
+            <label for="record-date">日期</label>
+            <input type="date" id="record-date">
+        </div>
+
+        <div class="form-group">
+            <label>項目</label>
+            <div class="category-grid">
+                <button type="button" class="cat-btn active" data-cat="箱子">箱子</button>
+                <button type="button" class="cat-btn" data-cat="袋子">袋子</button>
+                <button type="button" class="cat-btn" data-cat="寄出">寄出</button>
+                <button type="button" class="cat-btn" data-cat="郵寄">郵寄</button>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="record-qty">數量</label>
+            <div class="counter-container">
+                <button type="button" class="btn-qty" id="btn-minus">-</button>
+                <input type="number" id="record-qty" class="input-qty" value="1" min="1">
+                <button type="button" class="btn-qty" id="btn-plus">+</button>
+            </div>
+        </div>
+
+        <button type="button" class="btn-submit" id="btn-add">新增紀錄</button>
+    </div>
+
+    <!-- 紀錄顯示與導出區塊 -->
+    <div class="card">
+        <div class="list-header">
+            <label style="margin: 0;">歷史紀錄</label>
+            <button type="button" class="btn-export" id="btn-export">匯出 CSV</button>
+        </div>
+        <ul class="record-list" id="record-list">
+            <!-- 歷史紀錄動態渲染區域 -->
+        </ul>
+    </div>
+
+    <script>
+        // DOM 元件選擇
+        const dateInput = document.getElementById('record-date');
+        const catButtons = document.querySelectorAll('.cat-btn');
+        const qtyInput = document.getElementById('record-qty');
+        const btnMinus = document.getElementById('btn-minus');
+        const btnPlus = document.getElementById('btn-plus');
+        const btnAdd = document.getElementById('btn-add');
+        const btnExport = document.getElementById('btn-export');
+        const recordList = document.getElementById('record-list');
+
+        // 狀態管理
+        let selectedCategory = '箱子';
+        let records = JSON.parse(localStorage.getItem('shipment_records')) || [];
+
+        // 初始化日期為「今天」
+        const getTodayString = () => {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+        dateInput.value = getTodayString();
+
+        // 分類按鈕切換
+        catButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                catButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedCategory = btn.dataset.cat;
+            });
+        });
+
+        // 數量調整 (+/-)
+        btnMinus.addEventListener('click', () => {
+            let val = parseInt(qtyInput.value) || 1;
+            if (val > 1) qtyInput.value = val - 1;
+        });
+
+        btnPlus.addEventListener('click', () => {
+            let val = parseInt(qtyInput.value) || 1;
+            qtyInput.value = val + 1;
+        });
+
+        // 新增紀錄
+        btnAdd.addEventListener('click', () => {
+            const date = dateInput.value;
+            const qty = parseInt(qtyInput.value) || 1;
+
+            if (!date) {
+                alert('請選擇日期');
+                return;
+            }
+
+            const newRecord = {
+                id: Date.now(),
+                date: date,
+                category: selectedCategory,
+                quantity: qty
+            };
+
+            records.unshift(newRecord); // 新紀錄插在最前面
+            saveAndRender();
+
+            // 重置數量為 1
+            qtyInput.value = 1;
+        });
+
+        // 刪除紀錄
+        function deleteRecord(id) {
+            records = records.filter(item => item.id !== id);
+            saveAndRender();
+        }
+
+        // 儲存至 LocalStorage 並繪製 UI
+        function saveAndRender() {
+            localStorage.setItem('shipment_records', JSON.stringify(records));
+            renderList();
+        }
+
+        // 渲染清單
+        function renderList() {
+            recordList.innerHTML = '';
+
+            if (records.length === 0) {
+                recordList.innerHTML = '<div class="empty-state">目前尚無紀錄</div>';
+                return;
+            }
+
+            records.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'record-item';
+                li.innerHTML = `
+                    <div class="record-info">
+                        <span class="record-tag">${item.category}</span>
+                        <span class="record-date">${item.date}</span>
+                    </div>
+                    <div style="display: flex; align-items: center;">
+                        <span class="record-qty">${item.quantity} 個</span>
+                        <button class="btn-delete" onclick="deleteRecord(${item.id})">刪除</button>
+                    </div>
+                `;
+                recordList.appendChild(li);
+            });
+        }
+
+        // 匯出 CSV 功能 (包含 UTF-8 BOM 避免 Excel 開啟亂碼)
+        btnExport.addEventListener('click', () => {
+            if (records.length === 0) {
+                alert('目前沒有資料可供匯出！');
+                return;
+            }
+
+            let csvContent = "\uFEFF日期,項目,數量\n";
+            records.forEach(r => {
+                csvContent += `${r.date},${r.category},${r.quantity}\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `耗材與寄件紀錄_${getTodayString()}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+        // 初始化渲染
+        renderList();
+    </script>
+</body>
+</html>
