@@ -76,6 +76,60 @@
             background-color: #fff;
         }
 
+        /* 耗材獨立計數區塊 */
+        .item-counter-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            background-color: #fff;
+            transition: all 0.15s ease;
+        }
+
+        .item-counter-card.active {
+            border-color: var(--primary);
+            background-color: #eff6ff;
+        }
+
+        .item-label {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .counter-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-mini-qty {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background-color: #e5e7eb;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .input-mini-qty {
+            width: 50px;
+            height: 36px;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: bold;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            outline: none;
+            background: #fff;
+        }
+
+        /* 其他標籤網格 */
         .category-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -83,7 +137,7 @@
         }
 
         .cat-btn {
-            height: 48px;
+            height: 44px;
             border: 2px solid var(--border-color);
             background-color: #fff;
             border-radius: 8px;
@@ -98,35 +152,6 @@
             border-color: var(--primary);
             background-color: #eff6ff;
             color: var(--primary);
-        }
-
-        .counter-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            height: 48px;
-        }
-
-        .btn-qty {
-            width: 56px;
-            height: 48px;
-            border: none;
-            background-color: #e5e7eb;
-            font-size: 1.5rem;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        .input-qty {
-            width: 80px;
-            height: 48px;
-            text-align: center;
-            font-size: 1.2rem;
-            font-weight: bold;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            outline: none;
         }
 
         .btn-submit {
@@ -172,17 +197,13 @@
             font-size: 0.85rem;
             font-weight: bold;
             margin-right: 4px;
+            display: inline-block;
+            margin-bottom: 4px;
         }
 
         .record-date {
             font-size: 0.8rem;
             color: var(--text-muted);
-        }
-
-        .record-qty {
-            font-weight: bold;
-            font-size: 1rem;
-            color: var(--primary);
         }
 
         .btn-delete {
@@ -210,7 +231,7 @@
 
     <div class="card">
         <div class="form-group" style="margin-bottom: 0;">
-            <label for="sheet-url">Google Sheets Web App 網址</label>
+            <label for="sheet-url">Google Sheets Web App 網址（自動記憶）</label>
             <input type="url" id="sheet-url" placeholder="貼上 Web App 網址 (https://script.google.com/...)">
         </div>
     </div>
@@ -221,23 +242,36 @@
             <input type="date" id="record-date">
         </div>
 
+        <!-- 獨立數量選取區 -->
         <div class="form-group">
-            <label>項目（可多選）</label>
-            <div class="category-grid">
-                <button type="button" class="cat-btn" data-cat="箱子">箱子</button>
-                <button type="button" class="cat-btn" data-cat="袋子">袋子</button>
-                <button type="button" class="cat-btn" data-cat="郵局">郵局</button>
-                <button type="button" class="cat-btn" data-cat="711運費">711運費</button>
-                <button type="button" class="cat-btn" data-cat="郵局運費">郵局運費</button>
+            <label>耗材選擇與數量</label>
+            
+            <div class="item-counter-card" id="card-箱子">
+                <span class="item-label">📦 箱子</span>
+                <div class="counter-controls">
+                    <button type="button" class="btn-mini-qty" onclick="adjustQty('箱子', -1)">-</button>
+                    <input type="number" id="qty-箱子" class="input-mini-qty" value="0" min="0" onchange="updateCardStatus('箱子')">
+                    <button type="button" class="btn-mini-qty" onclick="adjustQty('箱子', 1)">+</button>
+                </div>
+            </div>
+
+            <div class="item-counter-card" id="card-袋子">
+                <span class="item-label">🛍️ 袋子</span>
+                <div class="counter-controls">
+                    <button type="button" class="btn-mini-qty" onclick="adjustQty('袋子', -1)">-</button>
+                    <input type="number" id="qty-袋子" class="input-mini-qty" value="0" min="0" onchange="updateCardStatus('袋子')">
+                    <button type="button" class="btn-mini-qty" onclick="adjustQty('袋子', 1)">+</button>
+                </div>
             </div>
         </div>
 
+        <!-- 其他類別切換 -->
         <div class="form-group">
-            <label for="record-qty">數量</label>
-            <div class="counter-container">
-                <button type="button" class="btn-qty" id="btn-minus">-</button>
-                <input type="number" id="record-qty" class="input-qty" value="1" min="1">
-                <button type="button" class="btn-qty" id="btn-plus">+</button>
+            <label>其他項目（可多選）</label>
+            <div class="category-grid">
+                <button type="button" class="cat-btn" data-cat="郵局">郵局</button>
+                <button type="button" class="cat-btn" data-cat="711運費">711運費</button>
+                <button type="button" class="cat-btn" data-cat="郵局運費">郵局運費</button>
             </div>
         </div>
 
@@ -255,15 +289,13 @@
         const dateInput = document.getElementById('record-date');
         const sheetUrlInput = document.getElementById('sheet-url');
         const catButtons = document.querySelectorAll('.cat-btn');
-        const qtyInput = document.getElementById('record-qty');
-        const btnMinus = document.getElementById('btn-minus');
-        const btnPlus = document.getElementById('btn-plus');
         const btnAdd = document.getElementById('btn-add');
         const recordList = document.getElementById('record-list');
 
         let selectedCategories = [];
         let records = JSON.parse(localStorage.getItem('shipment_records')) || [];
 
+        // 初始化日期與自動讀取記憶網址
         const getTodayString = () => {
             const today = new Date();
             const year = today.getFullYear();
@@ -274,10 +306,34 @@
         dateInput.value = getTodayString();
         sheetUrlInput.value = localStorage.getItem('google_sheet_url') || '';
 
-        sheetUrlInput.addEventListener('change', () => {
+        // 輸入即時記憶網址
+        sheetUrlInput.addEventListener('input', () => {
             localStorage.setItem('google_sheet_url', sheetUrlInput.value.trim());
         });
 
+        // 獨立耗材數量微調邏輯
+        function adjustQty(item, delta) {
+            const input = document.getElementById(`qty-${item}`);
+            let val = parseInt(input.value) || 0;
+            val = Math.max(0, val + delta);
+            input.value = val;
+            updateCardStatus(item);
+        }
+
+        // 更新耗材外觀卡片選取狀態
+        function updateCardStatus(item) {
+            const input = document.getElementById(`qty-${item}`);
+            const card = document.getElementById(`card-${item}`);
+            const val = parseInt(input.value) || 0;
+            
+            if (val > 0) {
+                card.classList.add('active');
+            } else {
+                card.classList.remove('active');
+            }
+        }
+
+        // 其他項目（標籤）選取狀態切換
         catButtons.forEach(btn => {
             btn.addEventListener('click', () => {
                 const cat = btn.dataset.cat;
@@ -291,24 +347,30 @@
             });
         });
 
-        btnMinus.addEventListener('click', () => {
-            let val = parseInt(qtyInput.value) || 1;
-            if (val > 1) qtyInput.value = val - 1;
-        });
-
-        btnPlus.addEventListener('click', () => {
-            let val = parseInt(qtyInput.value) || 1;
-            qtyInput.value = val + 1;
-        });
-
+        // 新增並送出紀錄
         btnAdd.addEventListener('click', async () => {
             const date = dateInput.value;
-            const qty = parseInt(qtyInput.value) || 1;
-
             if (!date) return alert('請選擇日期');
-            if (selectedCategories.length === 0) return alert('請至少選擇一個項目！');
 
-            const items = selectedCategories.map(cat => ({ category: cat, quantity: qty }));
+            const items = [];
+
+            // 讀取箱子與袋子的數量
+            ['箱子', '袋子'].forEach(item => {
+                const qty = parseInt(document.getElementById(`qty-${item}`).value) || 0;
+                if (qty > 0) {
+                    items.push({ category: item, quantity: qty });
+                }
+            });
+
+            // 讀取其他選取的標籤
+            selectedCategories.forEach(cat => {
+                items.push({ category: cat, quantity: 1 });
+            });
+
+            if (items.length === 0) {
+                return alert('請至少設定一個耗材數量或選擇一個項目！');
+            }
+
             const newRecord = {
                 id: Date.now(),
                 date: date,
@@ -326,8 +388,10 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ date: date, items: items })
                     });
+                    alert('紀錄已成功新增並寫入試算表！');
                 } catch (e) {
                     console.error('同步失敗:', e);
+                    alert('寫入試算表失敗，請檢查網址或網路連線。');
                 }
                 btnAdd.disabled = false;
                 btnAdd.innerText = '新增並寫入試算表';
@@ -336,7 +400,11 @@
             records.unshift(newRecord);
             saveAndRender();
 
-            qtyInput.value = 1;
+            // 重設輸入框
+            ['箱子', '袋子'].forEach(item => {
+                document.getElementById(`qty-${item}`).value = 0;
+                updateCardStatus(item);
+            });
             selectedCategories = [];
             catButtons.forEach(b => b.classList.remove('active'));
         });
@@ -362,7 +430,10 @@
                 const li = document.createElement('li');
                 li.className = 'record-item';
                 
-                const tagsHtml = item.items.map(i => `<span class="tag-chip">${i.category} x${i.quantity}</span>`).join('');
+                const tagsHtml = item.items.map(i => {
+                    const qtyDisplay = i.quantity > 1 ? ` x${i.quantity}` : '';
+                    return `<span class="tag-chip">${i.category}${qtyDisplay}</span>`;
+                }).join('');
 
                 li.innerHTML = `
                     <div>
