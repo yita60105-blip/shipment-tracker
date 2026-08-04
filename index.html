@@ -1,290 +1,581 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>出貨與運費管理系統</title>
-    <style>
-        :root {
-            --primary: #4f46e5;
-            --primary-hover: #4338ca;
-            --success: #10b981;
-            --danger: #ef4444;
-            --bg: #f3f4f6;
-            --card-bg: #ffffff;
-            --text: #1f2937;
-            --text-muted: #6b7280;
-            --border: #e5e7eb;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>出貨紀錄助手</title>
+  <style>
+    /* -------------------------------------------------- */
+    /* 1. 全局變數與基礎設定 (iOS Design System)         */
+    /* -------------------------------------------------- */
+    :root {
+      --primary: #007AFF;
+      --primary-light: #E5F1FF;
+      --success: #34C759;
+      --danger: #FF3B30;
+      --bg: #F2F2F7;
+      --card-bg: #FFFFFF;
+      --text: #1C1C1E;
+      --text-secondary: #8E8E93;
+      --border: rgba(60, 60, 67, 0.12);
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --radius-sm: 10px;
+      --shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+      --safe-area-bottom: env(safe-area-inset-bottom, 20px);
+    }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: var(--bg); color: var(--text); padding: 24px 12px; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 800px; background: var(--card-bg); border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); padding: 28px; }
-        
-        h2 { font-size: 1.6rem; text-align: center; color: var(--primary); font-weight: 800; margin-bottom: 24px; letter-spacing: -0.5px; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-        .section { background: #f8fafc; border-radius: 14px; padding: 18px; margin-bottom: 20px; border: 1px solid var(--border); }
-        .section-title { font-size: 0.95rem; font-weight: 700; color: var(--text-muted); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      padding: 16px;
+      padding-bottom: calc(100px + var(--safe-area-bottom));
+      display: flex;
+      justify-content: center;
+    }
 
-        .input-group { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-        input[type="date"], input[type="number"], input[type="text"] { padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
-        input:focus { border-color: var(--primary); }
+    .app-container {
+      width: 100%;
+      max-width: 500px; /* 手機最適寬度 */
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
 
-        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
-        .item-card { background: white; border-radius: 10px; padding: 12px; text-align: center; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; }
-        .item-name { font-weight: 600; font-size: 0.9rem; color: #475569; }
-        .number-input-custom { width: 100%; text-align: center; font-size: 1.1rem; font-weight: 700; color: var(--primary); }
+    /* -------------------------------------------------- */
+    /* 2. 標題與日期區塊                                  */
+    /* -------------------------------------------------- */
+    .header-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
 
-        .shipping-row { display: flex; flex-direction: column; gap: 10px; }
-        .shipping-item { background: white; padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
-        .qty-input-sm { width: 80px; text-align: center; }
+    .app-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
 
-        /* 按鈕樣式 */
-        .btn { padding: 12px 20px; border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
-        .btn-add { background: #e0e7ff; color: var(--primary); width: 100%; font-size: 1rem; padding: 14px; margin-top: 5px; }
-        .btn-add:hover { background: #c7d2fe; }
-        .btn-submit { background: var(--success); color: white; flex: 2; }
-        .btn-submit:hover { background: #059669; }
-        .btn-clear { background: #f3f4f6; color: var(--text-muted); flex: 1; }
-        .btn-clear:hover { background: #e5e7eb; }
-        .btn-danger-sm { background: #fee2e2; color: var(--danger); padding: 6px 10px; font-size: 0.85rem; border-radius: 6px; }
-        .btn-danger-sm:hover { background: #fca5a5; }
+    .date-picker-wrapper {
+      background: var(--bg);
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
 
-        /* 待傳送表格樣式 */
-        .table-wrapper { overflow-x: auto; margin-top: 10px; }
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; }
-        th, td { padding: 10px 12px; text-align: center; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
-        th { background: #f1f5f9; color: var(--text-muted); font-weight: 700; white-space: nowrap; }
-        td input { width: 65px; text-align: center; padding: 4px 6px; font-size: 0.85rem; }
+    .date-picker-wrapper input {
+      border: none;
+      background: transparent;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--primary);
+      outline: none;
+    }
 
-        .empty-tip { text-align: center; color: var(--text-muted); padding: 20px; font-size: 0.9rem; }
-        .action-bar { display: flex; gap: 12px; margin-top: 20px; }
-    </style>
+    /* -------------------------------------------------- */
+    /* 3. 卡片式模組 (Card Component)                      */
+    /* -------------------------------------------------- */
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* 快捷設定按鈕列 */
+    .quick-presets {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .preset-chip {
+      background: var(--primary-light);
+      color: var(--primary);
+      border: none;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+
+    .preset-chip:active {
+      transform: scale(0.95);
+    }
+
+    /* -------------------------------------------------- */
+    /* 4. 手機專用數字加減控制器 (Stepper)                 */
+    /* -------------------------------------------------- */
+    .stepper-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stepper-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .stepper-label {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .stepper-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--bg);
+      padding: 4px;
+      border-radius: var(--radius-sm);
+    }
+
+    .btn-step {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      border: none;
+      background: var(--card-bg);
+      color: var(--text);
+      font-size: 1.2rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-step:active {
+      background: #E5E5EA;
+    }
+
+    .stepper-value {
+      width: 40px;
+      text-align: center;
+      font-size: 1.1rem;
+      font-weight: 700;
+      border: none;
+      background: transparent;
+      outline: none;
+    }
+
+    /* -------------------------------------------------- */
+    /* 5. 待傳送清單與 Bottom Sheet                     */
+    /* -------------------------------------------------- */
+    .queue-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px;
+      background: var(--bg);
+      border-radius: var(--radius-md);
+      margin-bottom: 8px;
+    }
+
+    .queue-info-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .queue-info-sub {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .queue-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* -------------------------------------------------- */
+    /* 6. 懸浮常駐導覽列 (Floating Action Bar)           */
+    /* -------------------------------------------------- */
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
+      padding: 12px 16px calc(12px + var(--safe-area-bottom));
+      display: flex;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .bottom-bar-content {
+      width: 100%;
+      max-width: 500px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-primary {
+      flex: 2;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 16px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+      transition: transform 0.1s;
+    }
+
+    .btn-primary:active {
+      transform: scale(0.98);
+    }
+
+    .btn-secondary {
+      flex: 1;
+      background: var(--primary-light);
+      color: var(--primary);
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 16px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: #FFE5E5;
+      color: var(--danger);
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 24px;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+  </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>📦 出貨與運費管理系統</h2>
+<div class="app-container">
 
-    <!-- 1. 出貨日期 -->
-    <div class="section">
-        <div class="input-group">
-            <label for="order-date" style="font-weight: 600;">🗓 出貨日期：</label>
-            <input type="date" id="order-date">
-        </div>
+  <!-- 頂部卡片：標題與日期 -->
+  <div class="header-card">
+    <div class="app-title">📦 出貨紀錄助手</div>
+    <div class="date-picker-wrapper">
+      <span>🗓</span>
+      <input type="date" id="input-date">
+    </div>
+  </div>
+
+  <!-- 快捷卡片 (單手一鍵帶入) -->
+  <div class="card">
+    <div class="card-title">⚡ 常用快捷組合</div>
+    <div class="quick-presets">
+      <button class="preset-chip" onclick="App.applyPreset('711_standard')">🏪 7-11 標準箱 × 1</button>
+      <button class="preset-chip" onclick="App.applyPreset('post_pkg')">📮 郵局袋裝 × 1</button>
+      <button class="preset-chip" onclick="App.applyPreset('clear')">🔄 全部清空</button>
+    </div>
+  </div>
+
+  <!-- 1. 包材數量卡片 -->
+  <div class="card">
+    <div class="card-title">📦 包材數量</div>
+    
+    <div class="stepper-row">
+      <span class="stepper-label">紙箱</span>
+      <div class="stepper-controls">
+        <button class="btn-step" onclick="App.stepValue('box', -1)">-</button>
+        <input type="number" id="box" class="stepper-value" value="0" readonly>
+        <button class="btn-step" onclick="App.stepValue('box', 1)">+</button>
+      </div>
     </div>
 
-    <!-- 2. 包材數量 -->
-    <div class="section">
-        <div class="section-title">📦 包材數量</div>
-        <div class="grid-3">
-            <div class="item-card">
-                <span class="item-name">箱子</span>
-                <input type="number" id="qty-box" class="number-input-custom" value="0" min="0">
-            </div>
-            <div class="item-card">
-                <span class="item-name">袋子</span>
-                <input type="number" id="qty-bag" class="number-input-custom" value="0" min="0">
-            </div>
-            <div class="item-card">
-                <span class="item-name">郵局包材</span>
-                <input type="number" id="qty-post-pkg" class="number-input-custom" value="0" min="0">
-            </div>
-        </div>
+    <div class="stepper-row">
+      <span class="stepper-label">袋子</span>
+      <div class="stepper-controls">
+        <button class="btn-step" onclick="App.stepValue('bag', -1)">-</button>
+        <input type="number" id="bag" class="stepper-value" value="0" readonly>
+        <button class="btn-step" onclick="App.stepValue('bag', 1)">+</button>
+      </div>
     </div>
 
-    <!-- 3. 運費計算 -->
-    <div class="section">
-        <div class="section-title">🚚 運費資料</div>
-        <div class="shipping-row">
-            <div class="shipping-item">
-                <span class="item-name">🏪 7-11 數量</span>
-                <input type="number" id="qty-ship-711" class="qty-input-sm" value="0" min="0">
-            </div>
-            <div class="shipping-item">
-                <span class="item-name">📮 郵局寄送</span>
-                <div style="display: flex; gap: 8px; align-items: center;">
-                    數量: <input type="number" id="qty-ship-post" class="qty-input-sm" value="0" min="0">
-                    單價: <input type="number" id="price-ship-post" class="qty-input-sm" value="0" min="0">
-                </div>
-            </div>
-        </div>
+    <div class="stepper-row">
+      <span class="stepper-label">郵局專用包材</span>
+      <div class="stepper-controls">
+        <button class="btn-step" onclick="App.stepValue('post_pkg', -1)">-</button>
+        <input type="number" id="post_pkg" class="stepper-value" value="0" readonly>
+        <button class="btn-step" onclick="App.stepValue('post_pkg', 1)">+</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. 運費計算卡片 -->
+  <div class="card">
+    <div class="card-title">🚚 寄送管道數量</div>
+
+    <div class="stepper-row">
+      <span class="stepper-label">🏪 7-11 數量</span>
+      <div class="stepper-controls">
+        <button class="btn-step" onclick="App.stepValue('ship_711_qty', -1)">-</button>
+        <input type="number" id="ship_711_qty" class="stepper-value" value="0" readonly>
+        <button class="btn-step" onclick="App.stepValue('ship_711_qty', 1)">+</button>
+      </div>
     </div>
 
-    <!-- 加入待傳送清單按鈕 -->
-    <button class="btn btn-add" onclick="addToQueue()">➕ 加入待傳送預覽清單</button>
-
-    <!-- 4. 可編輯的待傳送清單 -->
-    <div class="section" style="margin-top: 24px; background: white;">
-        <div class="section-title" style="justify-content: space-between;">
-            <span>📋 待傳送清單 (匯入前可直接點擊修改)</span>
-            <span id="queue-count" style="color: var(--primary);">共 0 筆</span>
-        </div>
-        <div class="table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th>日期</th>
-                        <th>箱子</th>
-                        <th>袋子</th>
-                        <th>郵局包材</th>
-                        <th>711數量</th>
-                        <th>郵局數量</th>
-                        <th>郵局單價</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody id="queue-tbody">
-                    <!-- 動態渲染清單內容 -->
-                </tbody>
-            </table>
-            <div id="empty-tip" class="empty-tip">目前沒有待傳送的資料，請上方填寫後點擊「新增」。</div>
-        </div>
+    <div class="stepper-row">
+      <span class="stepper-label">📮 郵局數量</span>
+      <div class="stepper-controls">
+        <button class="btn-step" onclick="App.stepValue('ship_post_qty', -1)">-</button>
+        <input type="number" id="ship_post_qty" class="stepper-value" value="0" readonly>
+        <button class="btn-step" onclick="App.stepValue('ship_post_qty', 1)">+</button>
+      </div>
     </div>
 
-    <!-- 5. 底部批次匯入按鈕 -->
-    <div class="action-bar">
-        <button class="btn btn-clear" onclick="clearQueue()">🗑 清空預覽清單</button>
-        <button class="btn btn-submit" onclick="submitBatchToGoogleSheet()">🚀 一鍵匯入至 Google 試算表</button>
+    <div class="stepper-row">
+      <span class="stepper-label">📮 郵局單件運費 ($)</span>
+      <div class="stepper-controls">
+        <button class="btn-step" onclick="App.stepValue('ship_post_price', -10)">-10</button>
+        <input type="number" id="ship_post_price" class="stepper-value" value="0" style="width: 50px;" readonly>
+        <button class="btn-step" onclick="App.stepValue('ship_post_price', 10)">+10</button>
+      </div>
     </div>
+  </div>
+
+  <!-- 3. 待匯入暫存區 (卡片清單) -->
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div class="card-title">📋 待匯入清單</div>
+      <span id="queue-badge" style="font-size: 0.8rem; font-weight: 700; color: var(--primary);">0 筆</span>
+    </div>
+    <div id="queue-container">
+      <div class="empty-state">尚無資料，點擊下方「暫存至清單」</div>
+    </div>
+  </div>
+
 </div>
 
+<!-- 懸浮底部操作列 (iOS 底部觸控區) -->
+<div class="bottom-bar">
+  <div class="bottom-bar-content">
+    <button class="btn-secondary" onclick="App.addToQueue()">➕ 暫存</button>
+    <button class="btn-primary" id="btn-submit" onclick="App.submitAll()">🚀 一鍵匯入至試算表</button>
+  </div>
+</div>
+
+<!-- -------------------------------------------------- -->
+/* 7. JS 模組化架構 (ES6 Style Architecture)           */
+<!-- -------------------------------------------------- -->
 <script>
-    // ⚠️ 請確保這是您的 GAS Web App 部署網址（必須是 /exec 結尾）
-    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzfL27t8S_cv_urn_gcTc0esDKqR2E5ptLVrHvdPFWSkdpBk5Mk4HHspWToI1vz5fcU/exec";
+/**
+ * 核心應用程式模組 (App Module)
+ */
+const App = (() => {
+  // ⚙️ GAS 後端網址 (請替換為您的 /exec 網址)
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbzfL27t8S_cv_urn_gcTc0esDKqR2E5ptLVrHvdPFWSkdpBk5Mk4HHspWToI1vz5fcU/exec";
 
-    // 本地暫存佇列資料
-    let queueData = [];
+  // 暫存資料佇列
+  let queue = [];
 
-    // 初始化預設日期
-    window.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('order-date').value = new Date().toISOString().split('T')[0];
+  // 初始化
+  const init = () => {
+    document.getElementById('input-date').value = new Date().toISOString().split('T')[0];
+    renderQueue();
+  };
+
+  // 觸覺回饋 (手機震動)
+  const triggerHaptic = () => {
+    if (navigator.vibrate) navigator.vibrate(15);
+  };
+
+  // 調整數字 Step
+  const stepValue = (fieldId, amount) => {
+    triggerHaptic();
+    const input = document.getElementById(fieldId);
+    let current = parseFloat(input.value) || 0;
+    current = Math.max(0, current + amount);
+    input.value = current;
+  };
+
+  // 套用快捷預設組合
+  const applyPreset = (type) => {
+    triggerHaptic();
+    resetForm();
+
+    if (type === '711_standard') {
+      document.getElementById('box').value = 1;
+      document.getElementById('ship_711_qty').value = 1;
+    } else if (type === 'post_pkg') {
+      document.getElementById('post_pkg').value = 1;
+      document.getElementById('ship_post_qty').value = 1;
+      document.getElementById('ship_post_price').value = 37; // 預設 37 元小包
+    }
+  };
+
+  // 讀取當前表單物件
+  const getFormData = () => {
+    return {
+      id: Date.now(),
+      date: document.getElementById('input-date').value,
+      box: Number(document.getElementById('box').value) || 0,
+      bag: Number(document.getElementById('bag').value) || 0,
+      post_pkg: Number(document.getElementById('post_pkg').value) || 0,
+      ship_711_qty: Number(document.getElementById('ship_711_qty').value) || 0,
+      ship_post_qty: Number(document.getElementById('ship_post_qty').value) || 0,
+      ship_post_price: Number(document.getElementById('ship_post_price').value) || 0,
+    };
+  };
+
+  // 清空表單欄位
+  const resetForm = () => {
+    ['box', 'bag', 'post_pkg', 'ship_711_qty', 'ship_post_qty', 'ship_post_price'].forEach(id => {
+      document.getElementById(id).value = 0;
     });
+  };
 
-    // 新增資料到待傳送清單
-    function addToQueue() {
-        const item = {
-            id: Date.now(),
-            date: document.getElementById('order-date').value,
-            box: parseInt(document.getElementById('qty-box').value) || 0,
-            bag: parseInt(document.getElementById('qty-bag').value) || 0,
-            post_pkg: parseInt(document.getElementById('qty-post-pkg').value) || 0,
-            ship_711_qty: parseInt(document.getElementById('qty-ship-711').value) || 0,
-            ship_post_qty: parseInt(document.getElementById('qty-ship-post').value) || 0,
-            ship_post_price: parseFloat(document.getElementById('price-ship-post').value) || 0
-        };
+  // 新增至待傳輸佇列
+  const addToQueue = () => {
+    triggerHaptic();
+    const data = getFormData();
+    queue.push(data);
+    renderQueue();
+    resetForm();
+  };
 
-        queueData.push(item);
-        renderQueue();
-        resetInputs();
+  // 刪除佇列項目
+  const removeItem = (index) => {
+    triggerHaptic();
+    queue.splice(index, 1);
+    renderQueue();
+  };
+
+  // 渲染暫存清單 (卡片化 UX)
+  const renderQueue = () => {
+    const container = document.getElementById('queue-container');
+    const badge = document.getElementById('queue-badge');
+    badge.innerText = `${queue.length} 筆`;
+
+    if (queue.length === 0) {
+      container.innerHTML = `<div class="empty-state">尚無資料，點擊下方「暫存至清單」</div>`;
+      return;
     }
 
-    // 重置輸入欄位
-    function resetInputs() {
-        document.getElementById('qty-box').value = 0;
-        document.getElementById('qty-bag').value = 0;
-        document.getElementById('qty-post-pkg').value = 0;
-        document.getElementById('qty-ship-711').value = 0;
-        document.getElementById('qty-ship-post').value = 0;
-        document.getElementById('price-ship-post').value = 0;
+    container.innerHTML = queue.map((item, index) => `
+      <div class="queue-item">
+        <div>
+          <div class="queue-info-title">📅 ${item.date}</div>
+          <div class="queue-info-sub">
+            包材: 箱${item.box} / 袋${item.bag} / 郵包${item.post_pkg} | 
+            7-11: ${item.ship_711_qty} | 郵局: ${item.ship_post_qty} (單價$${item.ship_post_price})
+          </div>
+        </div>
+        <div class="queue-actions">
+          <button class="btn-icon" onclick="App.removeItem(${index})">✕</button>
+        </div>
+      </div>
+    `).join('');
+  };
+
+  // 批次匯入 Google 試算表
+  const submitAll = async () => {
+    triggerHaptic();
+
+    // 如果佇列沒有，但當前畫面有數字，自動先打包
+    if (queue.length === 0) {
+      const currentData = getFormData();
+      const hasValue = Object.keys(currentData).some(k => k !== 'id' && k !== 'date' && currentData[k] > 0);
+      if (hasValue) {
+        queue.push(currentData);
+      } else {
+        alert('請先點選加減號輸入資料或點擊暫存！');
+        return;
+      }
     }
 
-    // 渲染表格內容（可在表格內直接編輯）
-    function renderQueue() {
-        const tbody = document.getElementById('queue-tbody');
-        const emptyTip = document.getElementById('empty-tip');
-        const queueCount = document.getElementById('queue-count');
+    const btn = document.getElementById('btn-submit');
+    btn.disabled = true;
+    btn.innerText = '⏳ 正在寫入試算表...';
 
-        tbody.innerHTML = '';
-        queueCount.innerText = `共 ${queueData.length} 筆`;
-
-        if (queueData.length === 0) {
-            emptyTip.style.display = 'block';
-            return;
-        }
-
-        emptyTip.style.display = 'none';
-
-        queueData.forEach((item, index) => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><input type="date" value="${item.date}" onchange="updateQueueItem(${index}, 'date', this.value)" style="width: 110px;"></td>
-                <td><input type="number" value="${item.box}" min="0" onchange="updateQueueItem(${index}, 'box', this.value)"></td>
-                <td><input type="number" value="${item.bag}" min="0" onchange="updateQueueItem(${index}, 'bag', this.value)"></td>
-                <td><input type="number" value="${item.post_pkg}" min="0" onchange="updateQueueItem(${index}, 'post_pkg', this.value)"></td>
-                <td><input type="number" value="${item.ship_711_qty}" min="0" onchange="updateQueueItem(${index}, 'ship_711_qty', this.value)"></td>
-                <td><input type="number" value="${item.ship_post_qty}" min="0" onchange="updateQueueItem(${index}, 'ship_post_qty', this.value)"></td>
-                <td><input type="number" value="${item.ship_post_price}" min="0" onchange="updateQueueItem(${index}, 'ship_post_price', this.value)"></td>
-                <td><button class="btn btn-danger-sm" onclick="removeQueueItem(${index})">刪除</button></td>
-            `;
-            tbody.appendChild(tr);
+    try {
+      for (const item of queue) {
+        const formData = new FormData();
+        Object.keys(item).forEach(key => {
+          if (key !== 'id') formData.append(key, item[key]);
         });
+
+        await fetch(GAS_URL, {
+          method: 'POST',
+          body: formData,
+          mode: 'no-cors'
+        });
+      }
+
+      alert(`🎉 成功匯入 ${queue.length} 筆資料！`);
+      queue = [];
+      renderQueue();
+      resetForm();
+    } catch (error) {
+      alert('❌ 發送失敗：' + error);
+    } finally {
+      btn.disabled = false;
+      btn.innerText = '🚀 一鍵匯入至試算表';
     }
+  };
 
-    // 直接在表格編輯更新數據
-    function updateQueueItem(index, key, value) {
-        if (key === 'date') {
-            queueData[index][key] = value;
-        } else {
-            queueData[index][key] = parseFloat(value) || 0;
-        }
-    }
+  // 公開對外 API
+  return {
+    init,
+    stepValue,
+    applyPreset,
+    addToQueue,
+    removeItem,
+    submitAll
+  };
+})();
 
-    // 刪除單筆資料
-    function removeQueueItem(index) {
-        queueData.splice(index, 1);
-        renderQueue();
-    }
-
-    // 清空待傳送清單
-    function clearQueue() {
-        if (queueData.length === 0) return;
-        if (confirm('確定要清空預覽清單嗎？')) {
-            queueData = [];
-            renderQueue();
-        }
-    }
-
-    // 批次匯入 Google 試算表
-    async function submitBatchToGoogleSheet() {
-        if (queueData.length === 0) {
-            alert('目前清單內沒有資料可匯入！');
-            return;
-        }
-
-        const btnSubmit = document.querySelector('.btn-submit');
-        btnSubmit.disabled = true;
-        btnSubmit.innerText = '⏳ 正在寫入試算表...';
-
-        try {
-            // 逐筆送出資料，確保穩定寫入
-            for (const item of queueData) {
-                const formData = new FormData();
-                formData.append('date', item.date);
-                formData.append('box', item.box);
-                formData.append('bag', item.bag);
-                formData.append('post_pkg', item.post_pkg);
-                formData.append('ship_711_qty', item.ship_711_qty);
-                formData.append('ship_post_qty', item.ship_post_qty);
-                formData.append('ship_post_price', item.ship_post_price);
-
-                await fetch(GAS_WEB_APP_URL, {
-                    method: 'POST',
-                    body: formData,
-                    mode: 'no-cors'
-                });
-            }
-
-            alert(`✅ 成功匯入 ${queueData.length} 筆資料至 Google 試算表！`);
-            queueData = [];
-            renderQueue();
-        } catch (err) {
-            alert('❌ 傳送過程發生錯誤：' + err);
-        } finally {
-            btnSubmit.disabled = false;
-            btnSubmit.innerText = '🚀 一鍵匯入至 Google 試算表';
-        }
-    }
+// DOM 加載完成後初始化 App
+document.addEventListener('DOMContentLoaded', App.init);
 </script>
 
 </body>
