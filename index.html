@@ -7,7 +7,6 @@
     <style>
         :root {
             --primary: #4f46e5;
-            --primary-hover: #4338ca;
             --bg: #f8fafc;
             --card-bg: #ffffff;
             --text: #1e293b;
@@ -139,7 +138,6 @@
 </div>
 
 <script>
-    // 固定使用的 Google Apps Script Web App URL
     const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzfL27t8S_cv_urn_gcTc0esDKqR2E5ptLVrHvdPFWSkdpBk5Mk4HHspWToI1vz5fcU/exec";
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -194,21 +192,21 @@
         const shipPostPrice = parseFloat(document.getElementById('price-ship-post').value) || 0;
         const shipPostQty = parseInt(document.getElementById('qty-ship-post').value) || 0;
 
-        const items = [];
-        if (boxQty > 0) items.push({ category: "箱子", type: "item", price: 0, quantity: boxQty });
-        if (bagQty > 0) items.push({ category: "袋子", type: "item", price: 0, quantity: bagQty });
-        if (postPkgQty > 0) items.push({ category: "郵局包材", type: "item", price: 0, quantity: postPkgQty });
-
-        if (ship711Qty > 0) items.push({ category: "7-11運費", type: "freight", price: 60, quantity: ship711Qty });
-        if (shipPostQty > 0) items.push({ category: "郵局運費", type: "freight", price: shipPostPrice, quantity: shipPostQty });
-
-        if (items.length === 0) { alert('請至少填寫一項項目的數量或金額！'); return; }
+        const payload = {
+            date: date,
+            box: boxQty,
+            bag: bagQty,
+            post_pkg: postPkgQty,
+            ship_711_qty: ship711Qty,
+            ship_post_qty: shipPostQty,
+            ship_post_price: shipPostPrice
+        };
 
         fetch(GAS_WEB_APP_URL, {
             method: 'POST',
             mode: 'no-cors',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ date, items })
+            body: JSON.stringify(payload)
         }).then(() => {
             alert('數據已成功發送至 Google 試算表！');
             resetAll();
