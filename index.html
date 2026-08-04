@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>小幫手寄件與運費紀錄器</title>
+    <title>耗材與寄件紀錄器</title>
     <style>
         :root {
             --bg-color: #f4f6f9;
@@ -14,6 +14,7 @@
             --success: #10b981;
             --success-hover: #059669;
             --danger: #ef4444;
+            --danger-hover: #dc2626;
             --text-main: #0f172a;
             --text-muted: #64748b;
             --border-color: #e2e8f0;
@@ -84,10 +85,10 @@
             color: var(--text-muted);
         }
 
-        input[type="date"], input[type="number"] {
+        input[type="date"], input[type="url"], input[type="number"] {
             width: 100%;
-            height: 44px;
-            padding: 0 10px;
+            height: 48px;
+            padding: 0 14px;
             border: 1.5px solid var(--border-color);
             border-radius: 10px;
             font-size: 0.95rem;
@@ -101,98 +102,125 @@
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
         }
 
-        /* 箱子、袋子、郵局 三等分卡片 */
-        .pack-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 12px;
-        }
-
-        .pack-item {
-            background-color: #f8fafc;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 10px 8px;
-            text-align: center;
-        }
-
-        .pack-title {
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: var(--text-main);
-            margin-bottom: 8px;
-        }
-
-        /* 數量計數器微調 */
-        .qty-control {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-        }
-
-        .btn-mini {
-            width: 32px;
-            height: 36px;
-            border: 1px solid var(--border-color);
-            background-color: #fff;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 1.1rem;
-            cursor: pointer;
-            color: var(--text-main);
-        }
-
-        .btn-mini:active {
-            background-color: var(--border-color);
-        }
-
-        .input-mini {
-            width: 42px !important;
-            height: 36px !important;
-            text-align: center;
-            font-weight: 700;
-            padding: 0 !important;
-        }
-
-        /* 運費專用欄位 Layout */
-        .freight-grid {
+        .shipping-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
         }
 
-        .fixed-price-tag {
-            height: 44px;
-            background-color: #f1f5f9;
-            border: 1.5px solid var(--border-color);
+        .ship-btn {
+            height: 50px;
+            border: 2px solid var(--border-color);
+            background-color: #fff;
             border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
-            padding: 0 12px;
-            font-weight: 700;
-            color: var(--text-main);
-            font-size: 0.95rem;
+            justify-content: center;
+            gap: 6px;
         }
 
-        /* 按鈕樣式 */
-        .btn-add {
-            width: 100%;
-            height: 44px;
+        .ship-btn.active {
+            border-color: var(--primary);
             background-color: var(--primary-light);
             color: var(--primary);
-            border: 1.5px solid var(--primary);
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .cat-btn {
+            height: 46px;
+            border: 1.5px solid var(--border-color);
+            background-color: #fff;
             border-radius: 10px;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .cat-btn:hover {
+            border-color: var(--primary);
+        }
+
+        .cat-btn.active {
+            border-color: var(--primary);
+            background-color: var(--primary-light);
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .row-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .counter-container {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-qty {
+            width: 44px;
+            height: 48px;
+            border: 1.5px solid var(--border-color);
+            background-color: #f8fafc;
+            font-size: 1.3rem;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            color: var(--text-main);
+            transition: background-color 0.15s;
+        }
+
+        .btn-qty:hover {
+            background-color: #e2e8f0;
+        }
+
+        .btn-qty:active {
+            transform: scale(0.96);
+        }
+
+        .input-qty {
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .btn-main {
+            width: 100%;
+            height: 50px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
 
-        .btn-add:hover {
-            background-color: var(--primary);
-            color: white;
+        .btn-main:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-main:active {
+            transform: scale(0.99);
         }
 
         .btn-success {
@@ -231,7 +259,11 @@
             cursor: pointer;
         }
 
-        /* 待寫入清單 */
+        .btn-secondary:hover {
+            background-color: #e2e8f0;
+            color: var(--text-main);
+        }
+
         .pending-list {
             list-style: none;
         }
@@ -259,43 +291,27 @@
             margin-top: 2px;
         }
 
-        .pending-actions {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .btn-edit {
-            background-color: #ffffff;
-            border: 1px solid var(--border-color);
+        .pending-qty {
+            font-weight: 800;
             color: var(--primary);
-            font-size: 0.8rem;
-            font-weight: 600;
-            padding: 4px 8px;
-            border-radius: 6px;
-            cursor: pointer;
+            font-size: 1.1rem;
         }
 
-        .btn-edit:hover {
-            background-color: var(--primary-light);
-        }
-
-        .btn-del {
-            background-color: #ffffff;
-            border: 1px solid var(--border-color);
+        .btn-del-single {
+            background-color: transparent;
+            border: none;
             color: var(--danger);
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: 600;
+            cursor: pointer;
             padding: 4px 8px;
             border-radius: 6px;
-            cursor: pointer;
         }
 
-        .btn-del:hover {
+        .btn-del-single:hover {
             background-color: #fef2f2;
         }
 
-        /* 歷史紀錄 */
         .record-list {
             list-style: none;
         }
@@ -340,96 +356,62 @@
 <body>
 
     <header>
-        <h1>📦 小幫手寄件與運費紀錄器</h1>
+        <h1>📦 耗材與寄件紀錄器</h1>
     </header>
 
-    <!-- 日期選擇 -->
     <div class="card">
         <div class="form-group">
-            <label for="record-date">紀錄日期</label>
+            <label for="sheet-url">Google Sheets Web App 網址</label>
+            <input type="url" id="sheet-url" placeholder="貼上 Web App 網址" value="https://script.google.com/macros/s/AKfycbzfL27t8S_cv_urn_gcTc0esDKqR2E5ptLVrHvdPFWSkdpBk5Mk4HHspWToI1vz5fcU/exec">
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="form-group">
+            <label for="record-date">選擇日期</label>
             <input type="date" id="record-date">
         </div>
-    </div>
 
-    <!-- 區塊 1：包貨耗材數量紀錄 (箱子 / 袋子 / 郵局) -->
-    <div class="card">
-        <div class="card-title">
-            <span>📦 包貨耗材數量</span>
-        </div>
-        <div class="pack-grid">
-            <div class="pack-item">
-                <div class="pack-title">箱子</div>
-                <div class="qty-control">
-                    <button type="button" class="btn-mini" onclick="adjustQty('box', -1)">-</button>
-                    <input type="number" id="qty-box" class="input-mini" value="0" min="0">
-                    <button type="button" class="btn-mini" onclick="adjustQty('box', 1)">+</button>
-                </div>
-            </div>
-            <div class="pack-item">
-                <div class="pack-title">袋子</div>
-                <div class="qty-control">
-                    <button type="button" class="btn-mini" onclick="adjustQty('bag', -1)">-</button>
-                    <input type="number" id="qty-bag" class="input-mini" value="0" min="0">
-                    <button type="button" class="btn-mini" onclick="adjustQty('bag', 1)">+</button>
-                </div>
-            </div>
-            <div class="pack-item">
-                <div class="pack-title">郵局</div>
-                <div class="qty-control">
-                    <button type="button" class="btn-mini" onclick="adjustQty('post', -1)">-</button>
-                    <input type="number" id="qty-post" class="input-mini" value="0" min="0">
-                    <button type="button" class="btn-mini" onclick="adjustQty('post', 1)">+</button>
-                </div>
+        <div class="form-group">
+            <label>寄送方式 / 運費設定</label>
+            <div class="shipping-grid">
+                <button type="button" class="ship-btn active" data-mode="711">🏪 7-11 (免運)</button>
+                <button type="button" class="ship-btn" data-mode="post">📮 郵局 (自訂運費)</button>
             </div>
         </div>
-        <button type="button" class="btn-add" id="btn-add-materials">＋ 加入耗材數量至清單</button>
-    </div>
 
-    <!-- 區塊 2：7-11 運費紀錄 (固定 $60) -->
-    <div class="card">
-        <div class="card-title">
-            <span>🏪 7-11 運費紀錄</span>
+        <div class="form-group" id="freight-group">
+            <label for="freight-amount">自訂運費金額 (NT$)</label>
+            <input type="number" id="freight-amount" placeholder="7-11 模式下自動設為 $0" value="0" disabled>
         </div>
-        <div class="freight-grid form-group">
+
+        <div class="form-group">
+            <label>選擇耗材項目</label>
+            <div class="category-grid">
+                <button type="button" class="cat-btn active" data-cat="箱子">箱子</button>
+                <button type="button" class="cat-btn" data-cat="袋子">袋子</button>
+                <button type="button" class="cat-btn" data-cat="郵局">郵局</button>
+            </div>
+        </div>
+
+        <div class="row-group form-group">
             <div>
-                <label>固定單價</label>
-                <div class="fixed-price-tag">NT$ 60 / 筆</div>
+                <label for="item-price">單價 (NT$)</label>
+                <input type="number" id="item-price" value="0" min="0" placeholder="0">
             </div>
             <div>
-                <label for="711-qty">筆數 / 數量</label>
-                <div class="qty-control">
-                    <button type="button" class="btn-mini" onclick="adjust711Qty(-1)">-</button>
-                    <input type="number" id="711-qty" class="input-mini" value="1" min="1">
-                    <button type="button" class="btn-mini" onclick="adjust711Qty(1)">+</button>
+                <label for="record-qty">數量</label>
+                <div class="counter-container">
+                    <button type="button" class="btn-qty" id="btn-minus">-</button>
+                    <input type="number" id="record-qty" class="input-qty" value="1" min="1">
+                    <button type="button" class="btn-qty" id="btn-plus">+</button>
                 </div>
             </div>
         </div>
-        <button type="button" class="btn-add" id="btn-add-711">＋ 新增 7-11 運費</button>
+
+        <button type="button" class="btn-main" id="btn-add-item">＋ 加入當前紀錄清單</button>
     </div>
 
-    <!-- 區塊 3：郵局運費紀錄 (自訂金額 + 數量) -->
-    <div class="card">
-        <div class="card-title">
-            <span>📮 郵局運費紀錄 (獨立計算)</span>
-        </div>
-        <div class="freight-grid form-group">
-            <div>
-                <label for="post-price">運費金額 (NT$)</label>
-                <input type="number" id="post-price" placeholder="例如: 80" min="0">
-            </div>
-            <div>
-                <label for="post-freight-qty">筆數 / 數量</label>
-                <div class="qty-control">
-                    <button type="button" class="btn-mini" onclick="adjustPostFreightQty(-1)">-</button>
-                    <input type="number" id="post-freight-qty" class="input-mini" value="1" min="1">
-                    <button type="button" class="btn-mini" onclick="adjustPostFreightQty(1)">+</button>
-                </div>
-            </div>
-        </div>
-        <button type="button" class="btn-add" id="btn-add-post-freight">＋ 新增一筆郵局運費</button>
-    </div>
-
-    <!-- 區塊 4：待寫入清單 (可編輯與刪除) -->
     <div class="card">
         <div class="card-title">
             <span>🛒 待寫入清單</span>
@@ -439,7 +421,6 @@
         <button type="button" class="btn-success" id="btn-submit-all" disabled>送出並寫入 Google 試算表</button>
     </div>
 
-    <!-- 歷史紀錄 -->
     <div class="card">
         <div class="card-title">
             <span>📜 本地歷史紀錄</span>
@@ -448,29 +429,27 @@
     </div>
 
     <script>
-        const FIXED_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzcyOqjb8zNUzUuigIuYZVDeq8X3n3lrm8SnZTQUWvqz0MxKRfhf4jTEkY61VNij7a9/exec';
-
+        const DEFAULT_URL = "https://script.google.com/macros/s/AKfycbzfL27t8S_cv_urn_gcTc0esDKqR2E5ptLVrHvdPFWSkdpBk5Mk4HHspWToI1vz5fcU/exec";
         const dateInput = document.getElementById('record-date');
-        const qtyBox = document.getElementById('qty-box');
-        const qtyBag = document.getElementById('qty-bag');
-        const qtyPost = document.getElementById('qty-post');
-        
-        const qty711Input = document.getElementById('711-qty');
-        const postPriceInput = document.getElementById('post-price');
-        const postFreightQtyInput = document.getElementById('post-freight-qty');
-        
-        const btnAddMaterials = document.getElementById('btn-add-materials');
-        const btnAdd711 = document.getElementById('btn-add-711');
-        const btnAddPostFreight = document.getElementById('btn-add-post-freight');
+        const sheetUrlInput = document.getElementById('sheet-url');
+        const shipButtons = document.querySelectorAll('.ship-btn');
+        const freightAmountInput = document.getElementById('freight-amount');
+        const catButtons = document.querySelectorAll('.cat-btn');
+        const itemPriceInput = document.getElementById('item-price');
+        const qtyInput = document.getElementById('record-qty');
+        const btnMinus = document.getElementById('btn-minus');
+        const btnPlus = document.getElementById('btn-plus');
+        const btnAddItem = document.getElementById('btn-add-item');
         const btnSubmitAll = document.getElementById('btn-submit-all');
         const btnClearPending = document.getElementById('btn-clear-pending');
         const pendingList = document.getElementById('pending-list');
         const recordList = document.getElementById('record-list');
 
+        let shippingMode = '711';
+        let selectedCategory = '箱子';
         let pendingItems = [];
-        let historyRecords = JSON.parse(localStorage.getItem('shipment_records_v6')) || [];
+        let historyRecords = JSON.parse(localStorage.getItem('shipment_records_v3')) || [];
 
-        // 初始化日期為今天
         const getTodayString = () => {
             const today = new Date();
             const year = today.getFullYear();
@@ -479,152 +458,115 @@
             return `${year}-${month}-${day}`;
         };
         dateInput.value = getTodayString();
+        
+        sheetUrlInput.value = DEFAULT_URL;
+        localStorage.setItem('google_sheet_url', DEFAULT_URL);
 
-        // 微調耗材數量
-        function adjustQty(type, delta) {
-            let el = type === 'box' ? qtyBox : (type === 'bag' ? qtyBag : qtyPost);
-            let val = parseInt(el.value) || 0;
-            val = Math.max(0, val + delta);
-            el.value = val;
-        }
+        sheetUrlInput.addEventListener('change', () => {
+            localStorage.setItem('google_sheet_url', sheetUrlInput.value.trim());
+        });
 
-        // 微調 7-11 數量
-        function adjust711Qty(delta) {
-            let val = parseInt(qty711Input.value) || 1;
-            val = Math.max(1, val + delta);
-            qty711Input.value = val;
-        }
+        shipButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                shipButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                shippingMode = btn.dataset.mode;
 
-        // 微調郵局運費筆數
-        function adjustPostFreightQty(delta) {
-            let val = parseInt(postFreightQtyInput.value) || 1;
-            val = Math.max(1, val + delta);
-            postFreightQtyInput.value = val;
-        }
-
-        // 加入耗材數量
-        btnAddMaterials.addEventListener('click', () => {
-            const box = parseInt(qtyBox.value) || 0;
-            const bag = parseInt(qtyBag.value) || 0;
-            const post = parseInt(qtyPost.value) || 0;
-
-            if (box === 0 && bag === 0 && post === 0) {
-                return alert('請至少填寫一個耗材的數量');
-            }
-
-            const itemsToAdd = [
-                { category: '箱子', qty: box },
-                { category: '袋子', qty: bag },
-                { category: '郵局', qty: post }
-            ];
-
-            itemsToAdd.forEach(item => {
-                if (item.qty > 0) {
-                    const existing = pendingItems.find(p => p.category === item.category && p.type === 'material');
-                    if (existing) {
-                        existing.quantity += item.qty;
-                    } else {
-                        pendingItems.push({
-                            id: Date.now() + Math.random(),
-                            type: 'material',
-                            category: item.category,
-                            quantity: item.qty
-                        });
-                    }
+                if (shippingMode === '711') {
+                    freightAmountInput.value = 0;
+                    freightAmountInput.disabled = true;
+                    freightAmountInput.placeholder = "7-11 模式下自動設為 $0";
+                } else {
+                    freightAmountInput.disabled = false;
+                    freightAmountInput.placeholder = "輸入郵局運費金額";
+                    freightAmountInput.focus();
                 }
             });
+        });
 
-            qtyBox.value = 0;
-            qtyBag.value = 0;
-            qtyPost.value = 0;
+        catButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                catButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedCategory = btn.dataset.cat;
+            });
+        });
+
+        btnMinus.addEventListener('click', () => {
+            let val = parseInt(qtyInput.value) || 1;
+            if (val > 1) qtyInput.value = val - 1;
+        });
+
+        btnPlus.addEventListener('click', () => {
+            let val = parseInt(qtyInput.value) || 1;
+            qtyInput.value = val + 1;
+        });
+
+        btnAddItem.addEventListener('click', () => {
+            const qty = parseInt(qtyInput.value) || 1;
+            const price = parseFloat(itemPriceInput.value) || 0;
+
+            const existingIndex = pendingItems.findIndex(item => item.category === selectedCategory && item.type === 'item');
+            if (existingIndex > -1) {
+                pendingItems[existingIndex].quantity += qty;
+                if (price > 0) pendingItems[existingIndex].price = price;
+            } else {
+                pendingItems.push({
+                    id: Date.now(),
+                    type: 'item',
+                    category: selectedCategory,
+                    quantity: qty,
+                    price: price
+                });
+            }
+
+            const freightPrice = parseFloat(freightAmountInput.value) || 0;
+            if (shippingMode === 'post' && freightPrice > 0) {
+                const existingFreight = pendingItems.findIndex(item => item.category === '郵局運費');
+                if (existingFreight > -1) {
+                    pendingItems[existingFreight].quantity += freightPrice;
+                } else {
+                    pendingItems.push({
+                        id: Date.now() + 1,
+                        type: 'freight',
+                        category: '郵局運費',
+                        quantity: freightPrice,
+                        price: 1
+                    });
+                }
+                freightAmountInput.value = 0;
+            } else if (shippingMode === '711') {
+                const existing711 = pendingItems.findIndex(item => item.category === '711運費');
+                if (existing711 === -1) {
+                    pendingItems.push({
+                        id: Date.now() + 2,
+                        type: 'freight',
+                        category: '711運費',
+                        quantity: 0,
+                        price: 0
+                    });
+                }
+            }
+
+            qtyInput.value = 1;
             renderPendingList();
         });
 
-        // 新增 7-11 運費 ($60)
-        btnAdd711.addEventListener('click', () => {
-            const qty = parseInt(qty711Input.value) || 1;
-            if (qty <= 0) return alert('請填寫有效的數量');
-
-            pendingItems.push({
-                id: Date.now() + Math.random(),
-                type: '711_freight',
-                category: '7-11 運費',
-                amount: 60,
-                quantity: qty
-            });
-
-            qty711Input.value = 1;
-            renderPendingList();
-        });
-
-        // 新增郵局獨立運費
-        btnAddPostFreight.addEventListener('click', () => {
-            const price = parseFloat(postPriceInput.value) || 0;
-            const qty = parseInt(postFreightQtyInput.value) || 1;
-
-            if (price <= 0) {
-                return alert('請輸入有效的郵局運費金額');
-            }
-
-            pendingItems.push({
-                id: Date.now() + Math.random(),
-                type: 'post_freight',
-                category: '郵局運費',
-                amount: price,
-                quantity: qty
-            });
-
-            postPriceInput.value = '';
-            postFreightQtyInput.value = 1;
-            renderPendingList();
-        });
-
-        // 編輯待寫入項目
-        function editPendingItem(id) {
-            const item = pendingItems.find(p => p.id === id);
-            if (!item) return;
-
-            if (item.type === 'material') {
-                const newQty = prompt(`請輸入新的【${item.category}】數量:`, item.quantity);
-                if (newQty !== null && !isNaN(newQty) && parseInt(newQty) > 0) {
-                    item.quantity = parseInt(newQty);
-                }
-            } else if (item.type === '711_freight') {
-                const newQty = prompt(`請輸入新的【7-11 運費】筆數:`, item.quantity);
-                if (newQty !== null && !isNaN(newQty) && parseInt(newQty) > 0) {
-                    item.quantity = parseInt(newQty);
-                }
-            } else if (item.type === 'post_freight') {
-                const newAmount = prompt(`請輸入新的【郵局運費金額】:`, item.amount);
-                const newQty = prompt(`請輸入新的【筆數/數量】:`, item.quantity);
-                if (newAmount !== null && !isNaN(newAmount) && parseFloat(newAmount) > 0) {
-                    item.amount = parseFloat(newAmount);
-                }
-                if (newQty !== null && !isNaN(newQty) && parseInt(newQty) > 0) {
-                    item.quantity = parseInt(newQty);
-                }
-            }
-            renderPendingList();
-        }
-
-        // 刪除待寫入項目
         function deletePendingItem(id) {
             pendingItems = pendingItems.filter(item => item.id !== id);
             renderPendingList();
         }
 
-        // 清空暫存清單
         btnClearPending.addEventListener('click', () => {
             pendingItems = [];
             renderPendingList();
         });
 
-        // 渲染待寫入清單
         function renderPendingList() {
             pendingList.innerHTML = '';
 
             if (pendingItems.length === 0) {
-                pendingList.innerHTML = '<div class="empty-state">目前清單為空，請輸入後點擊新增</div>';
+                pendingList.innerHTML = '<div class="empty-state">尚未加入任何項目，請選擇後點擊「加入清單」</div>';
                 btnSubmitAll.disabled = true;
                 btnClearPending.style.display = 'none';
                 return;
@@ -636,63 +578,43 @@
             pendingItems.forEach(item => {
                 const li = document.createElement('li');
                 li.className = 'pending-item';
-
-                let titleText = item.category;
-                let subText = '';
-
-                if (item.type === 'material') {
-                    subText = `數量: ${item.quantity}`;
-                } else if (item.type === '711_freight') {
-                    const totalCost = item.amount * item.quantity;
-                    subText = `金額: $60 × ${item.quantity} 筆 (共 $${totalCost})`;
-                } else if (item.type === 'post_freight') {
-                    const totalCost = item.amount * item.quantity;
-                    subText = `金額: $${item.amount} × ${item.quantity} 筆 (共 $${totalCost})`;
-                }
+                
+                const isFreight = item.type === 'freight';
+                const subText = isFreight ? '運費項目' : (item.price > 0 ? `單價 $${item.price} × ${item.quantity} = $${item.price * item.quantity}` : `數量: ${item.quantity}`);
+                const qtyText = isFreight ? `$${item.quantity}` : `+${item.quantity}`;
 
                 li.innerHTML = `
                     <div>
-                        <div class="pending-tag">${titleText}</div>
+                        <div class="pending-tag">${item.category}</div>
                         <div class="pending-sub">${subText}</div>
                     </div>
-                    <div class="pending-actions">
-                        <button class="btn-edit" onclick="editPendingItem(${item.id})">✏️ 編輯</button>
-                        <button class="btn-del" onclick="deletePendingItem(${item.id})">刪除</button>
+                    <div style="display:flex; align-items:center; gap: 10px;">
+                        <span class="pending-qty">${qtyText}</span>
+                        <button class="btn-del-single" onclick="deletePendingItem(${item.id})">移除</button>
                     </div>
                 `;
                 pendingList.appendChild(li);
             });
         }
 
-        // 送出至 Google 試算表
         btnSubmitAll.addEventListener('click', async () => {
             const date = dateInput.value;
             if (!date) return alert('請選擇日期');
             if (pendingItems.length === 0) return alert('清單內沒有項目');
 
+            const sheetUrl = sheetUrlInput.value.trim();
+            if (!sheetUrl) return alert('請先填入 Google Sheets Web App 網址！');
+
             btnSubmitAll.disabled = true;
             btnSubmitAll.innerText = '正在寫入 Google 試算表...';
 
-            const formattedItems = pendingItems.map(item => {
-                if (item.type === '711_freight' || item.type === 'post_freight') {
-                    return {
-                        category: item.category,
-                        quantity: item.amount * item.quantity // 計算為總金額傳回 Google Sheet
-                    };
-                }
-                return {
-                    category: item.category,
-                    quantity: item.quantity
-                };
-            });
-
             const payload = {
                 date: date,
-                items: formattedItems
+                items: pendingItems
             };
 
             try {
-                await fetch(FIXED_SCRIPT_URL, {
+                await fetch(sheetUrl, {
                     method: 'POST',
                     mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
@@ -704,7 +626,7 @@
                     date: date,
                     items: [...pendingItems]
                 });
-                localStorage.setItem('shipment_records_v6', JSON.stringify(historyRecords));
+                localStorage.setItem('shipment_records_v3', JSON.stringify(historyRecords));
                 renderHistoryList();
 
                 pendingItems = [];
@@ -712,14 +634,13 @@
                 alert('✅ 已成功寫入 Google 試算表！');
             } catch (e) {
                 console.error('寫入失敗:', e);
-                alert('❌ 寫入失敗，請確認網路連線');
+                alert('❌ 寫入失敗，請檢查網路或 API 網址設定');
             }
 
             btnSubmitAll.disabled = false;
             btnSubmitAll.innerText = '送出並寫入 Google 試算表';
         });
 
-        // 渲染歷史紀錄
         function renderHistoryList() {
             recordList.innerHTML = '';
             if (historyRecords.length === 0) {
@@ -731,9 +652,7 @@
                 const li = document.createElement('li');
                 li.className = 'record-item';
                 const tagsHtml = item.items.map(i => {
-                    let label = `${i.category} × ${i.quantity}`;
-                    if (i.type === '711_freight') label = `7-11 運費 $60×${i.quantity}`;
-                    if (i.type === 'post_freight') label = `郵局運費 $${i.amount}×${i.quantity}`;
+                    const label = i.type === 'freight' ? `${i.category} $${i.quantity}` : `${i.category} × ${i.quantity}`;
                     return `<span class="tag-chip">${label}</span>`;
                 }).join('');
 
