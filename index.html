@@ -51,44 +51,62 @@
     }
 
     /* -------------------------------------------------- */
-    /* 2. 標題與日期區塊                                  */
+    /* 2. 獨立標題區塊                                    */
     /* -------------------------------------------------- */
-    .header-card {
+    .app-header {
+      padding: 8px 4px 0px 4px;
+    }
+
+    .app-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--text);
+    }
+
+    /* -------------------------------------------------- */
+    /* 3. 日期選擇卡片 (顯眼版)                          */
+    /* -------------------------------------------------- */
+    .date-card {
       background: var(--card-bg);
       border-radius: var(--radius-lg);
-      padding: 20px;
+      padding: 16px 20px;
       box-shadow: var(--shadow);
       display: flex;
       justify-content: space-between;
       align-items: center;
+      border: 1.5px solid var(--primary-light);
     }
 
-    .app-title {
-      font-size: 1.25rem;
+    .date-label {
+      font-size: 0.95rem;
       font-weight: 700;
-      letter-spacing: -0.5px;
-    }
-
-    .date-picker-wrapper {
-      background: var(--bg);
-      padding: 8px 12px;
-      border-radius: var(--radius-sm);
+      color: var(--text);
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
 
-    .date-picker-wrapper input {
+    .date-input-wrapper {
+      background: var(--primary-light);
+      padding: 8px 14px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+    }
+
+    .date-input-wrapper input {
       border: none;
       background: transparent;
-      font-size: 0.9rem;
-      font-weight: 600;
+      font-size: 1rem;
+      font-weight: 700;
       color: var(--primary);
       outline: none;
+      cursor: pointer;
     }
 
     /* -------------------------------------------------- */
-    /* 3. 卡片式模組 (Card Component)                      */
+    /* 4. 卡片式模組 (Card Component)                      */
     /* -------------------------------------------------- */
     .card {
       background: var(--card-bg);
@@ -109,7 +127,7 @@
     }
 
     /* -------------------------------------------------- */
-    /* 4. 手機專用數字加減控制器 (Stepper)                 */
+    /* 5. 手機專用數字加減控制器 (Stepper)                 */
     /* -------------------------------------------------- */
     .stepper-row {
       display: flex;
@@ -169,7 +187,7 @@
     }
 
     /* -------------------------------------------------- */
-    /* 5. 待傳送清單與卡片項目                             */
+    /* 6. 待傳送清單與卡片項目                             */
     /* -------------------------------------------------- */
     .queue-item {
       display: flex;
@@ -198,7 +216,7 @@
     }
 
     /* -------------------------------------------------- */
-    /* 6. 懸浮常駐導覽列 (Floating Action Bar)           */
+    /* 7. 懸浮常駐導覽列 (Floating Action Bar)           */
     /* -------------------------------------------------- */
     .bottom-bar {
       position: fixed;
@@ -275,18 +293,24 @@
 
 <div class="app-container">
 
-  <!-- 頂部卡片：標題與日期 -->
-  <div class="header-card">
-    <div class="app-title">📦 出貨紀錄助手</div>
-    <div class="date-picker-wrapper">
-      <span>🗓</span>
+  <!-- 1. 獨立主標題 -->
+  <div class="app-header">
+    <h1 class="app-title">📦 出貨紀錄助手</h1>
+  </div>
+
+  <!-- 2. 獨立顯眼的日期選擇卡片 -->
+  <div class="date-card">
+    <div class="date-label">
+      <span>🗓</span> 出貨日期
+    </div>
+    <div class="date-input-wrapper">
       <input type="date" id="input-date">
     </div>
   </div>
 
-  <!-- 1. 包材數量卡片 -->
+  <!-- 3. 包貨數量卡片 (名稱已修改) -->
   <div class="card">
-    <div class="card-title">📦 包材數量</div>
+    <div class="card-title">📦 包貨數量</div>
     
     <div class="stepper-row">
       <span class="stepper-label">箱子</span>
@@ -316,7 +340,7 @@
     </div>
   </div>
 
-  <!-- 2. 運費計算卡片 -->
+  <!-- 4. 寄送管道數量卡片 -->
   <div class="card">
     <div class="card-title">🚚 寄送管道數量</div>
 
@@ -348,7 +372,7 @@
     </div>
   </div>
 
-  <!-- 3. 待匯入暫存區 (卡片清單) -->
+  <!-- 5. 待匯入暫存區 (卡片清單) -->
   <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: center;">
       <div class="card-title">📋 待匯入清單</div>
@@ -374,7 +398,7 @@
  * 核心應用程式模組 (App Module)
  */
 const App = (() => {
-  // ⚙️ GAS 後端網址 (請替換為您的 /exec 網址)
+  // ⚙️ GAS 後端網址
   const GAS_URL = "https://script.google.com/macros/s/AKfycbzfL27t8S_cv_urn_gcTc0esDKqR2E5ptLVrHvdPFWSkdpBk5Mk4HHspWToI1vz5fcU/exec";
 
   // 暫存資料佇列
@@ -453,7 +477,7 @@ const App = (() => {
         <div>
           <div class="queue-info-title">📅 ${item.date}</div>
           <div class="queue-info-sub">
-            包材: 箱${item.box} / 袋${item.bag} / 郵包${item.post_pkg} | 
+            包貨: 箱${item.box} / 袋${item.bag} / 郵包${item.post_pkg} | 
             7-11: ${item.ship_711_qty} | 郵局: ${item.ship_post_qty} (單價$${item.ship_post_price})
           </div>
         </div>
