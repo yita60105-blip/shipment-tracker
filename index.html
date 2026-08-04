@@ -7,6 +7,7 @@
     <style>
         :root {
             --primary: #4f46e5;
+            --primary-hover: #4338ca;
             --bg: #f8fafc;
             --card-bg: #ffffff;
             --text: #1e293b;
@@ -32,7 +33,6 @@
         .shipping-row { display: flex; flex-direction: column; gap: 12px; }
         .shipping-item { background: white; padding: 14px; border-radius: 10px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
         .shipping-info { display: flex; flex-direction: column; gap: 4px; }
-        .shipping-price-tag { font-size: 0.85rem; color: var(--text-muted); }
         .qty-input-sm { width: 80px; text-align: center; }
 
         .summary-card { background: #e0e7ff; border-radius: 12px; padding: 16px; margin-top: 20px; }
@@ -58,21 +58,21 @@
         </div>
     </div>
 
-    <!-- 第一行：包貨數量 -->
+    <!-- 第一行：包材數量 -->
     <div class="section">
         <div class="section-title">📦 包材數量</div>
         <div class="grid-3">
             <div class="item-card">
                 <div class="item-name">箱子</div>
-                <input type="number" id="qty-box" class="number-input-custom" value="1" min="0" oninput="calculateTotal()">
+                <input type="number" id="qty-box" class="number-input-custom" value="0" min="0" oninput="calculateTotal()">
             </div>
             <div class="item-card">
                 <div class="item-name">袋子</div>
-                <input type="number" id="qty-bag" class="number-input-custom" value="1" min="0" oninput="calculateTotal()">
+                <input type="number" id="qty-bag" class="number-input-custom" value="0" min="0" oninput="calculateTotal()">
             </div>
             <div class="item-card">
                 <div class="item-name">郵局包材</div>
-                <input type="number" id="qty-post-pkg" class="number-input-custom" value="1" min="0" oninput="calculateTotal()">
+                <input type="number" id="qty-post-pkg" class="number-input-custom" value="0" min="0" oninput="calculateTotal()">
             </div>
         </div>
     </div>
@@ -86,7 +86,7 @@
                     <span class="item-name">🏪 7-11 數量</span>
                 </div>
                 <div>
-                    <input type="number" id="qty-ship-711" class="qty-input-sm" value="1" min="0" oninput="calculateTotal()">
+                    <input type="number" id="qty-ship-711" class="qty-input-sm" value="0" min="0" oninput="calculateTotal()">
                 </div>
             </div>
 
@@ -95,8 +95,8 @@
                     <span class="item-name">📮 郵局數量與運費</span>
                 </div>
                 <div style="display: flex; gap: 8px; align-items: center;">
-                    數量: <input type="number" id="qty-ship-post" class="qty-input-sm" value="1" min="0" oninput="calculateTotal()">
-                    單價: <input type="number" id="price-ship-post" class="qty-input-sm" value="1" min="0" oninput="calculateTotal()">
+                    數量: <input type="number" id="qty-ship-post" class="qty-input-sm" value="0" min="0" oninput="calculateTotal()">
+                    單價: <input type="number" id="price-ship-post" class="qty-input-sm" value="0" min="0" oninput="calculateTotal()">
                 </div>
             </div>
         </div>
@@ -121,7 +121,7 @@
 </div>
 
 <script>
-    // 你的 GAS Web App 部署網址
+    // 您的 Google Apps Script Web App 網址
     const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzfL27t8S_cv_urn_gcTc0esDKqR2E5ptLVrHvdPFWSkdpBk5Mk4HHspWToI1vz5fcU/exec";
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -154,26 +154,25 @@
     }
 
     function sendToGoogleSheet() {
-        const payload = {
-            date: document.getElementById('order-date').value,
-            box: parseInt(document.getElementById('qty-box').value) || 0,
-            bag: parseInt(document.getElementById('qty-bag').value) || 0,
-            post_pkg: parseInt(document.getElementById('qty-post-pkg').value) || 0,
-            ship_711_qty: parseInt(document.getElementById('qty-ship-711').value) || 0,
-            ship_post_qty: parseInt(document.getElementById('qty-ship-post').value) || 0,
-            ship_post_price: parseFloat(document.getElementById('price-ship-post').value) || 0
-        };
+        // 使用 FormData 包裝要發送的資料
+        const formData = new FormData();
+        formData.append('date', document.getElementById('order-date').value);
+        formData.append('box', document.getElementById('qty-box').value || 0);
+        formData.append('bag', document.getElementById('qty-bag').value || 0);
+        formData.append('post_pkg', document.getElementById('qty-post-pkg').value || 0);
+        formData.append('ship_711_qty', document.getElementById('qty-ship-711').value || 0);
+        formData.append('ship_post_qty', document.getElementById('qty-ship-post').value || 0);
+        formData.append('ship_post_price', document.getElementById('price-ship-post').value || 0);
 
         fetch(GAS_WEB_APP_URL, {
             method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: formData,
+            mode: 'no-cors'
         }).then(() => {
-            alert('數據已成功寫入 Google 試算表！');
+            alert('數據已成功發送至 Google 試算表！');
         }).catch(err => alert('發送失敗：' + err));
     }
 </script>
 
 </body>
-</html>
+</html>ㄋ
