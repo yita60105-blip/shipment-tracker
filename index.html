@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>耗材與寄件紀錄器</title>
+    <title>小幫手寄件與運費紀錄器</title>
     <style>
         :root {
             --bg-color: #f4f6f9;
@@ -14,7 +14,6 @@
             --success: #10b981;
             --success-hover: #059669;
             --danger: #ef4444;
-            --danger-hover: #dc2626;
             --text-main: #0f172a;
             --text-muted: #64748b;
             --border-color: #e2e8f0;
@@ -85,7 +84,7 @@
             color: var(--text-muted);
         }
 
-        input[type="date"], input[type="url"], input[type="number"] {
+        input[type="date"], input[type="number"] {
             width: 100%;
             height: 48px;
             padding: 0 14px;
@@ -122,7 +121,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
         }
 
         .ship-btn.active {
@@ -131,7 +129,7 @@
             color: var(--primary);
         }
 
-        /* 耗材項目按鈕網格 */
+        /* 寄件項目按鈕網格 */
         .category-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -161,21 +159,15 @@
             font-weight: 700;
         }
 
-        /* 數量與單價欄位 */
-        .row-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
+        /* 數量微調按鈕 */
         .counter-container {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
         }
 
         .btn-qty {
-            width: 44px;
+            width: 48px;
             height: 48px;
             border: 1.5px solid var(--border-color);
             background-color: #f8fafc;
@@ -198,6 +190,7 @@
         .input-qty {
             text-align: center;
             font-weight: 700;
+            flex: 1;
         }
 
         /* 按鈕樣式設計 */
@@ -268,7 +261,7 @@
             color: var(--text-main);
         }
 
-        /* 暫存清單列表 */
+        /* 暫存清單 */
         .pending-list {
             list-style: none;
         }
@@ -288,12 +281,6 @@
             font-weight: 700;
             color: var(--text-main);
             font-size: 0.95rem;
-        }
-
-        .pending-sub {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-top: 2px;
         }
 
         .pending-qty {
@@ -362,16 +349,8 @@
 <body>
 
     <header>
-        <h1>📦 耗材與寄件紀錄器</h1>
+        <h1>📦 小幫手寄件與運費紀錄器</h1>
     </header>
-
-    <!-- API 網址設定 -->
-    <div class="card">
-        <div class="form-group">
-            <label for="sheet-url">Google Sheets Web App 網址</label>
-            <input type="url" id="sheet-url" placeholder="貼上 Web App 網址 (https://script.google.com/...)">
-        </div>
-    </div>
 
     <!-- 主操作卡片 -->
     <div class="card">
@@ -380,23 +359,24 @@
             <input type="date" id="record-date">
         </div>
 
-        <!-- 3. 運費模式與自訂金額 -->
+        <!-- 寄送方式選擇 (7-11 vs 郵局) -->
         <div class="form-group">
-            <label>寄送方式 / 運費設定</label>
+            <label>寄送方式</label>
             <div class="shipping-grid">
-                <button type="button" class="ship-btn active" data-mode="711">🏪 7-11 (免運)</button>
-                <button type="button" class="ship-btn" data-mode="post">📮 郵局 (自訂運費)</button>
+                <button type="button" class="ship-btn active" data-mode="711">🏪 7-11</button>
+                <button type="button" class="ship-btn" data-mode="post">📮 郵局</button>
             </div>
         </div>
 
-        <div class="form-group" id="freight-group">
-            <label for="freight-amount">自訂運費金額 (NT$)</label>
-            <input type="number" id="freight-amount" placeholder="7-11 模式下自動設為 $0" value="0" disabled>
+        <!-- 只有點選郵局時才會顯示運費輸入框 -->
+        <div class="form-group" id="freight-group" style="display: none;">
+            <label for="freight-amount">郵局運費金額 (NT$)</label>
+            <input type="number" id="freight-amount" placeholder="請輸入郵局運費金額" min="0">
         </div>
 
-        <!-- 2. 數量與耗材自訂 -->
+        <!-- 寄件項目選擇 -->
         <div class="form-group">
-            <label>選擇耗材項目</label>
+            <label>選擇寄件項目</label>
             <div class="category-grid">
                 <button type="button" class="cat-btn active" data-cat="箱子">箱子</button>
                 <button type="button" class="cat-btn" data-cat="袋子">袋子</button>
@@ -404,25 +384,20 @@
             </div>
         </div>
 
-        <div class="row-group form-group">
-            <div>
-                <label for="item-price">單價 (NT$)</label>
-                <input type="number" id="item-price" value="0" min="0" placeholder="0">
-            </div>
-            <div>
-                <label for="record-qty">數量</label>
-                <div class="counter-container">
-                    <button type="button" class="btn-qty" id="btn-minus">-</button>
-                    <input type="number" id="record-qty" class="input-qty" value="1" min="1">
-                    <button type="button" class="btn-qty" id="btn-plus">+</button>
-                </div>
+        <!-- 僅保留數量選擇 -->
+        <div class="form-group">
+            <label for="record-qty">數量</label>
+            <div class="counter-container">
+                <button type="button" class="btn-qty" id="btn-minus">-</button>
+                <input type="number" id="record-qty" class="input-qty" value="1" min="1">
+                <button type="button" class="btn-qty" id="btn-plus">+</button>
             </div>
         </div>
 
         <button type="button" class="btn-main" id="btn-add-item">＋ 加入當前紀錄清單</button>
     </div>
 
-    <!-- 1. 暫存購物車清單區塊 -->
+    <!-- 待寫入清單 -->
     <div class="card">
         <div class="card-title">
             <span>🛒 待寫入清單</span>
@@ -441,12 +416,14 @@
     </div>
 
     <script>
+        // 固定的 API 網址
+        const FIXED_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzcyOqjb8zNUzUuigIuYZVDeq8X3n3lrm8SnZTQUWvqz0MxKRfhf4jTEkY61VNij7a9/exec';
+
         const dateInput = document.getElementById('record-date');
-        const sheetUrlInput = document.getElementById('sheet-url');
         const shipButtons = document.querySelectorAll('.ship-btn');
+        const freightGroup = document.getElementById('freight-group');
         const freightAmountInput = document.getElementById('freight-amount');
         const catButtons = document.querySelectorAll('.cat-btn');
-        const itemPriceInput = document.getElementById('item-price');
         const qtyInput = document.getElementById('record-qty');
         const btnMinus = document.getElementById('btn-minus');
         const btnPlus = document.getElementById('btn-plus');
@@ -459,9 +436,9 @@
         let shippingMode = '711'; // '711' or 'post'
         let selectedCategory = '箱子';
         let pendingItems = [];
-        let historyRecords = JSON.parse(localStorage.getItem('shipment_records_v3')) || [];
+        let historyRecords = JSON.parse(localStorage.getItem('shipment_records_v4')) || [];
 
-        // 初始化日期與網址
+        // 初始化日期為今天
         const getTodayString = () => {
             const today = new Date();
             const year = today.getFullYear();
@@ -470,13 +447,8 @@
             return `${year}-${month}-${day}`;
         };
         dateInput.value = getTodayString();
-        sheetUrlInput.value = localStorage.getItem('google_sheet_url') || '';
 
-        sheetUrlInput.addEventListener('change', () => {
-            localStorage.setItem('google_sheet_url', sheetUrlInput.value.trim());
-        });
-
-        // 3. 寄送模式切換 (7-11 vs 郵局)
+        // 寄送模式切換 (7-11 vs 郵局)
         shipButtons.forEach(btn => {
             btn.addEventListener('click', () => {
                 shipButtons.forEach(b => b.classList.remove('active'));
@@ -484,18 +456,16 @@
                 shippingMode = btn.dataset.mode;
 
                 if (shippingMode === '711') {
-                    freightAmountInput.value = 0;
-                    freightAmountInput.disabled = true;
-                    freightAmountInput.placeholder = "7-11 模式下自動設為 $0";
+                    freightGroup.style.display = 'none';
+                    freightAmountInput.value = '';
                 } else {
-                    freightAmountInput.disabled = false;
-                    freightAmountInput.placeholder = "輸入郵局運費金額";
+                    freightGroup.style.display = 'block';
                     freightAmountInput.focus();
                 }
             });
         });
 
-        // 選擇耗材項目
+        // 選擇寄件項目
         catButtons.forEach(btn => {
             btn.addEventListener('click', () => {
                 catButtons.forEach(b => b.classList.remove('active'));
@@ -504,7 +474,7 @@
             });
         });
 
-        // 2. 數量微調按鈕
+        // 數量加減
         btnMinus.addEventListener('click', () => {
             let val = parseInt(qtyInput.value) || 1;
             if (val > 1) qtyInput.value = val - 1;
@@ -518,49 +488,46 @@
         // 加入暫存清單
         btnAddItem.addEventListener('click', () => {
             const qty = parseInt(qtyInput.value) || 1;
-            const price = parseFloat(itemPriceInput.value) || 0;
 
-            // 檢查是否已有相同耗材，有則累加
+            // 檢查是否已有相同項目，有則累加
             const existingIndex = pendingItems.findIndex(item => item.category === selectedCategory && item.type === 'item');
             if (existingIndex > -1) {
                 pendingItems[existingIndex].quantity += qty;
-                if (price > 0) pendingItems[existingIndex].price = price;
             } else {
                 pendingItems.push({
                     id: Date.now(),
                     type: 'item',
                     category: selectedCategory,
-                    quantity: qty,
-                    price: price
+                    quantity: qty
                 });
             }
 
-            // 若選擇郵局且填寫了運費，自動一併加入運費項目
-            const freightPrice = parseFloat(freightAmountInput.value) || 0;
-            if (shippingMode === 'post' && freightPrice > 0) {
-                const existingFreight = pendingItems.findIndex(item => item.category === '郵局運費');
-                if (existingFreight > -1) {
-                    pendingItems[existingFreight].quantity += freightPrice;
-                } else {
-                    pendingItems.push({
-                        id: Date.now() + 1,
-                        type: 'freight',
-                        category: '郵局運費',
-                        quantity: freightPrice,
-                        price: 1
-                    });
+            // 若選擇郵局且輸入了郵局運費，併入運費紀錄
+            if (shippingMode === 'post') {
+                const freightPrice = parseFloat(freightAmountInput.value) || 0;
+                if (freightPrice > 0) {
+                    const existingFreight = pendingItems.findIndex(item => item.category === '郵局運費');
+                    if (existingFreight > -1) {
+                        pendingItems[existingFreight].quantity += freightPrice;
+                    } else {
+                        pendingItems.push({
+                            id: Date.now() + 1,
+                            type: 'freight',
+                            category: '郵局運費',
+                            quantity: freightPrice
+                        });
+                    }
+                    freightAmountInput.value = ''; // 清空運費輸入框
                 }
-                freightAmountInput.value = 0; // 新增後重置運費框
             } else if (shippingMode === '711') {
-                // 如果是 7-11，確保金額紀錄正確（0元）
+                // 7-11 預設 711運費 為 0
                 const existing711 = pendingItems.findIndex(item => item.category === '711運費');
                 if (existing711 === -1) {
                     pendingItems.push({
                         id: Date.now() + 2,
                         type: 'freight',
                         category: '711運費',
-                        quantity: 0,
-                        price: 0
+                        quantity: 0
                     });
                 }
             }
@@ -600,16 +567,14 @@
                 li.className = 'pending-item';
                 
                 const isFreight = item.type === 'freight';
-                const subText = isFreight ? '運費項目' : (item.price > 0 ? `單價 $${item.price} × ${item.quantity} = $${item.price * item.quantity}` : `數量: ${item.quantity}`);
-                const qtyText = isFreight ? `$${item.quantity}` : `+${item.quantity}`;
+                const qtyDisplay = isFreight ? `$${item.quantity}` : `數量: ${item.quantity}`;
 
                 li.innerHTML = `
                     <div>
                         <div class="pending-tag">${item.category}</div>
-                        <div class="pending-sub">${subText}</div>
                     </div>
-                    <div style="display:flex; align-items:center; gap: 10px;">
-                        <span class="pending-qty">${qtyText}</span>
+                    <div style="display:flex; align-items:center; gap: 12px;">
+                        <span class="pending-qty">${qtyDisplay}</span>
                         <button class="btn-del-single" onclick="deletePendingItem(${item.id})">移除</button>
                     </div>
                 `;
@@ -623,9 +588,6 @@
             if (!date) return alert('請選擇日期');
             if (pendingItems.length === 0) return alert('清單內沒有項目');
 
-            const sheetUrl = sheetUrlInput.value.trim();
-            if (!sheetUrl) return alert('請先填入 Google Sheets Web App 網址！');
-
             btnSubmitAll.disabled = true;
             btnSubmitAll.innerText = '正在寫入 Google 試算表...';
 
@@ -635,7 +597,7 @@
             };
 
             try {
-                await fetch(sheetUrl, {
+                await fetch(FIXED_SCRIPT_URL, {
                     method: 'POST',
                     mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
@@ -648,7 +610,7 @@
                     date: date,
                     items: [...pendingItems]
                 });
-                localStorage.setItem('shipment_records_v3', JSON.stringify(historyRecords));
+                localStorage.setItem('shipment_records_v4', JSON.stringify(historyRecords));
                 renderHistoryList();
 
                 // 清空暫存
@@ -657,7 +619,7 @@
                 alert('✅ 已成功寫入 Google 試算表！');
             } catch (e) {
                 console.error('寫入失敗:', e);
-                alert('❌ 寫入失敗，請檢查網路或 API 網址設定');
+                alert('❌ 寫入失敗，請確認網路連線');
             }
 
             btnSubmitAll.disabled = false;
