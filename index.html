@@ -362,7 +362,7 @@
     <div class="card">
         <div class="form-group">
             <label for="sheet-url">Google Sheets Web App 網址</label>
-            <input type="url" id="sheet-url" placeholder="貼上 Web App 網址" value="https://script.google.com/macros/s/AKfycbzfL27t8S_cv_urn_gcTc0esDKqR2E5ptLVrHvdPFWSkdpBk5Mk4HHspWToI1vz5fcU/exec">
+            <input type="url" id="sheet-url" placeholder="貼上 Web App 網址">
         </div>
     </div>
 
@@ -375,14 +375,14 @@
         <div class="form-group">
             <label>寄送方式 / 運費設定</label>
             <div class="shipping-grid">
-                <button type="button" class="ship-btn active" data-mode="711">🏪 7-11 (免運)</button>
+                <button type="button" class="ship-btn active" data-mode="711">🏪 7-11 (固定 $60)</button>
                 <button type="button" class="ship-btn" data-mode="post">📮 郵局 (自訂運費)</button>
             </div>
         </div>
 
         <div class="form-group" id="freight-group">
-            <label for="freight-amount">自訂運費金額 (NT$)</label>
-            <input type="number" id="freight-amount" placeholder="7-11 模式下自動設為 $0" value="0" disabled>
+            <label for="freight-amount">運費金額 (NT$)</label>
+            <input type="number" id="freight-amount" placeholder="7-11 模式下固定為 $60" value="60" disabled>
         </div>
 
         <div class="form-group">
@@ -459,8 +459,9 @@
         };
         dateInput.value = getTodayString();
         
-        sheetUrlInput.value = DEFAULT_URL;
-        localStorage.setItem('google_sheet_url', DEFAULT_URL);
+        const savedUrl = localStorage.getItem('google_sheet_url') || DEFAULT_URL;
+        sheetUrlInput.value = savedUrl;
+        localStorage.setItem('google_sheet_url', savedUrl);
 
         sheetUrlInput.addEventListener('change', () => {
             localStorage.setItem('google_sheet_url', sheetUrlInput.value.trim());
@@ -473,9 +474,9 @@
                 shippingMode = btn.dataset.mode;
 
                 if (shippingMode === '711') {
-                    freightAmountInput.value = 0;
+                    freightAmountInput.value = 60;
                     freightAmountInput.disabled = true;
-                    freightAmountInput.placeholder = "7-11 模式下自動設為 $0";
+                    freightAmountInput.placeholder = "7-11 模式下固定為 $60";
                 } else {
                     freightAmountInput.disabled = false;
                     freightAmountInput.placeholder = "輸入郵局運費金額";
@@ -537,13 +538,15 @@
                 freightAmountInput.value = 0;
             } else if (shippingMode === '711') {
                 const existing711 = pendingItems.findIndex(item => item.category === '711運費');
-                if (existing711 === -1) {
+                if (existing711 > -1) {
+                    pendingItems[existing711].quantity = 60;
+                } else {
                     pendingItems.push({
                         id: Date.now() + 2,
                         type: 'freight',
                         category: '711運費',
-                        quantity: 0,
-                        price: 0
+                        quantity: 60,
+                        price: 60
                     });
                 }
             }
@@ -552,10 +555,10 @@
             renderPendingList();
         });
 
-        function deletePendingItem(id) {
+        window.deletePendingItem = function(id) {
             pendingItems = pendingItems.filter(item => item.id !== id);
             renderPendingList();
-        }
+        };
 
         btnClearPending.addEventListener('click', () => {
             pendingItems = [];
@@ -631,7 +634,7 @@
 
                 pendingItems = [];
                 renderPendingList();
-                alert('✅ 已成功寫入 Google 試算表！');
+                alert('✅ 已發送寫入請求至 Google 試算表！');
             } catch (e) {
                 console.error('寫入失敗:', e);
                 alert('❌ 寫入失敗，請檢查網路或 API 網址設定');
