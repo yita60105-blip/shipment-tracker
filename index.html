@@ -7,6 +7,7 @@
     <style>
         :root {
             --primary: #4f46e5;
+            --primary-hover: #4338ca;
             --bg: #f8fafc;
             --card-bg: #ffffff;
             --text: #1e293b;
@@ -22,7 +23,7 @@
         .section-title { font-size: 0.95rem; font-weight: 700; color: var(--text-muted); margin-bottom: 12px; }
         
         .input-group { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-        input[type="date"], input[type="number"], input[type="url"] { padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; outline: none; }
+        input[type="date"], input[type="number"] { padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; outline: none; }
 
         .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
         .item-card { background: white; border-radius: 10px; padding: 12px; text-align: center; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
@@ -43,20 +44,12 @@
         .btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; }
         .btn-submit { background: var(--primary); color: white; }
         .btn-reset { background: #ef4444; color: white; }
-
-        .gas-url-section { background: #fdf6b2; border: 1px solid #facc15; padding: 12px; border-radius: 10px; margin-bottom: 20px; }
-        .gas-url-section label { font-size: 0.85rem; font-weight: bold; color: #854d0e; display: block; margin-bottom: 4px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>📦 出貨與運費紀錄系統</h2>
-
-    <div class="gas-url-section">
-        <label for="gas-url">🔗 Google Apps Script Web App URL：</label>
-        <input type="url" id="gas-url" placeholder="https://script.google.com/macros/s/.../exec" style="width: 100%;">
-    </div>
 
     <!-- 出貨日期 -->
     <div class="section">
@@ -146,16 +139,13 @@
 </div>
 
 <script>
+    // 固定使用的 Google Apps Script Web App URL
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzfL27t8S_cv_urn_gcTc0esDKqR2E5ptLVrHvdPFWSkdpBk5Mk4HHspWToI1vz5fcU/exec";
+
     window.addEventListener('DOMContentLoaded', () => {
         const dateInput = document.getElementById('order-date');
         dateInput.value = new Date().toISOString().split('T')[0];
-        const savedUrl = localStorage.getItem('gas_web_app_url');
-        if (savedUrl) document.getElementById('gas-url').value = savedUrl;
         calculateTotal();
-    });
-
-    document.getElementById('gas-url').addEventListener('change', (e) => {
-        localStorage.setItem('gas_web_app_url', e.target.value.trim());
     });
 
     function calculateTotal() {
@@ -195,9 +185,6 @@
     }
 
     function sendToGoogleSheet() {
-        const url = document.getElementById('gas-url').value.trim();
-        if (!url) { alert('請先輸入 Google Apps Script Web App URL！'); return; }
-
         const date = document.getElementById('order-date').value;
         const boxQty = parseInt(document.getElementById('qty-box').value) || 0;
         const bagQty = parseInt(document.getElementById('qty-bag').value) || 0;
@@ -217,7 +204,7 @@
 
         if (items.length === 0) { alert('請至少填寫一項項目的數量或金額！'); return; }
 
-        fetch(url, {
+        fetch(GAS_WEB_APP_URL, {
             method: 'POST',
             mode: 'no-cors',
             headers: { 'Content-Type': 'application/json' },
