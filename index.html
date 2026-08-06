@@ -31,7 +31,7 @@
       padding: 0;
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
       -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation; /* 防止雙擊縮放與預設觸控延遲 */
+      touch-action: manipulation; /* 防止雙擊縮放 */
     }
 
     body {
@@ -172,15 +172,16 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      user-select: none;
     }
 
     .btn-step:active {
       background: #E5E5EA;
     }
 
-    /* 可直接輸入的數字框樣式 */
+    /* 可完全聚焦並呼叫鍵盤的數字輸入框 */
     .stepper-value {
-      width: 50px;
+      width: 55px;
       height: 38px;
       text-align: center;
       font-size: 1.1rem;
@@ -191,7 +192,11 @@
       background: transparent;
       outline: none;
       -webkit-appearance: none;
+      -moz-appearance: textfield;
       margin: 0;
+      padding: 0;
+      user-select: text; /* 允許選取 */
+      pointer-events: auto;
     }
 
     .stepper-value:focus {
@@ -200,7 +205,6 @@
       box-shadow: 0 0 0 2px var(--primary-light);
     }
 
-    /* 隱藏 Chrome/Safari/Edge 數字輸入框的預設箭頭 */
     .stepper-value::-webkit-outer-spin-button,
     .stepper-value::-webkit-inner-spin-button {
       -webkit-appearance: none;
@@ -337,7 +341,7 @@
       <span class="stepper-label">箱子</span>
       <div class="stepper-controls">
         <button class="btn-step" onclick="App.stepValue('box', -1)">-</button>
-        <input type="number" id="box" class="stepper-value" value="0" inputmode="numeric" onfocus="this.select()" onblur="App.validateInput(this)">
+        <input type="number" id="box" class="stepper-value" value="0" inputmode="numeric" pattern="[0-9]*" onfocus="App.handleFocus(this)" onblur="App.validateInput(this)">
         <button class="btn-step" onclick="App.stepValue('box', 1)">+</button>
       </div>
     </div>
@@ -346,7 +350,7 @@
       <span class="stepper-label">袋子</span>
       <div class="stepper-controls">
         <button class="btn-step" onclick="App.stepValue('bag', -1)">-</button>
-        <input type="number" id="bag" class="stepper-value" value="0" inputmode="numeric" onfocus="this.select()" onblur="App.validateInput(this)">
+        <input type="number" id="bag" class="stepper-value" value="0" inputmode="numeric" pattern="[0-9]*" onfocus="App.handleFocus(this)" onblur="App.validateInput(this)">
         <button class="btn-step" onclick="App.stepValue('bag', 1)">+</button>
       </div>
     </div>
@@ -355,7 +359,7 @@
       <span class="stepper-label">郵局專用包材</span>
       <div class="stepper-controls">
         <button class="btn-step" onclick="App.stepValue('post_pkg', -1)">-</button>
-        <input type="number" id="post_pkg" class="stepper-value" value="0" inputmode="numeric" onfocus="this.select()" onblur="App.validateInput(this)">
+        <input type="number" id="post_pkg" class="stepper-value" value="0" inputmode="numeric" pattern="[0-9]*" onfocus="App.handleFocus(this)" onblur="App.validateInput(this)">
         <button class="btn-step" onclick="App.stepValue('post_pkg', 1)">+</button>
       </div>
     </div>
@@ -369,7 +373,7 @@
       <span class="stepper-label">🏪 7-11 數量</span>
       <div class="stepper-controls">
         <button class="btn-step" onclick="App.stepValue('ship_711_qty', -1)">-</button>
-        <input type="number" id="ship_711_qty" class="stepper-value" value="0" inputmode="numeric" onfocus="this.select()" onblur="App.validateInput(this)">
+        <input type="number" id="ship_711_qty" class="stepper-value" value="0" inputmode="numeric" pattern="[0-9]*" onfocus="App.handleFocus(this)" onblur="App.validateInput(this)">
         <button class="btn-step" onclick="App.stepValue('ship_711_qty', 1)">+</button>
       </div>
     </div>
@@ -378,7 +382,7 @@
       <span class="stepper-label">📮 郵局數量</span>
       <div class="stepper-controls">
         <button class="btn-step" onclick="App.stepValue('ship_post_qty', -1)">-</button>
-        <input type="number" id="ship_post_qty" class="stepper-value" value="0" inputmode="numeric" onfocus="this.select()" onblur="App.validateInput(this)">
+        <input type="number" id="ship_post_qty" class="stepper-value" value="0" inputmode="numeric" pattern="[0-9]*" onfocus="App.handleFocus(this)" onblur="App.validateInput(this)">
         <button class="btn-step" onclick="App.stepValue('ship_post_qty', 1)">+</button>
       </div>
     </div>
@@ -387,7 +391,7 @@
       <span class="stepper-label">📮 郵局單件運費 ($)</span>
       <div class="stepper-controls">
         <button class="btn-step" onclick="App.stepValue('ship_post_price', -10)">-10</button>
-        <input type="number" id="ship_post_price" class="stepper-value" value="0" inputmode="numeric" onfocus="this.select()" onblur="App.validateInput(this)">
+        <input type="number" id="ship_post_price" class="stepper-value" value="0" inputmode="numeric" pattern="[0-9]*" onfocus="App.handleFocus(this)" onblur="App.validateInput(this)">
         <button class="btn-step" onclick="App.stepValue('ship_post_price', 10)">+10</button>
       </div>
     </div>
@@ -451,6 +455,13 @@ const App = (() => {
   // 觸覺回饋 (手機震動)
   const triggerHaptic = () => {
     if (navigator.vibrate) navigator.vibrate(15);
+  };
+
+  // 點擊輸入框時自動全選數字，方便直接輸入覆蓋
+  const handleFocus = (input) => {
+    setTimeout(() => {
+      input.select();
+    }, 50);
   };
 
   // 調整數字 Step
@@ -584,6 +595,7 @@ const App = (() => {
   return {
     init,
     stepValue,
+    handleFocus,
     validateInput,
     addToQueue,
     removeItem,
