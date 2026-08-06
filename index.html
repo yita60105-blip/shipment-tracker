@@ -31,6 +31,7 @@
       padding: 0;
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
       -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation; /* 防止雙擊縮放與預設觸控延遲 */
     }
 
     body {
@@ -55,7 +56,7 @@
     /* -------------------------------------------------- */
     .app-header {
       padding: 8px 4px 0px 4px;
-      text-align: center; /* 標題置中 */
+      text-align: center;
     }
 
     .app-title {
@@ -151,7 +152,7 @@
     .stepper-controls {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
       background: var(--bg);
       padding: 4px;
       border-radius: var(--radius-sm);
@@ -164,7 +165,7 @@
       border: none;
       background: var(--card-bg);
       color: var(--text);
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       font-weight: 700;
       cursor: pointer;
       box-shadow: 0 2px 4px rgba(0,0,0,0.05);
@@ -177,14 +178,33 @@
       background: #E5E5EA;
     }
 
+    /* 可直接輸入的數字框樣式 */
     .stepper-value {
-      width: 40px;
+      width: 50px;
+      height: 38px;
       text-align: center;
       font-size: 1.1rem;
       font-weight: 700;
-      border: none;
+      color: var(--text);
+      border: 1px solid transparent;
+      border-radius: 6px;
       background: transparent;
       outline: none;
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .stepper-value:focus {
+      background: #FFFFFF;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px var(--primary-light);
+    }
+
+    /* 隱藏 Chrome/Safari/Edge 數字輸入框的預設箭頭 */
+    .stepper-value::-webkit-outer-spin-button,
+    .stepper-value::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
     }
 
     /* -------------------------------------------------- */
@@ -317,7 +337,7 @@
       <span class="stepper-label">箱子</span>
       <div class="stepper-controls">
         <button class="btn-step" onclick="App.stepValue('box', -1)">-</button>
-        <input type="number" id="box" class="stepper-value" value="0" readonly>
+        <input type="number" id="box" class="stepper-value" value="0" inputmode="numeric" onfocus="this.select()" onblur="App.validateInput(this)">
         <button class="btn-step" onclick="App.stepValue('box', 1)">+</button>
       </div>
     </div>
@@ -326,7 +346,7 @@
       <span class="stepper-label">袋子</span>
       <div class="stepper-controls">
         <button class="btn-step" onclick="App.stepValue('bag', -1)">-</button>
-        <input type="number" id="bag" class="stepper-value" value="0" readonly>
+        <input type="number" id="bag" class="stepper-value" value="0" inputmode="numeric" onfocus="this.select()" onblur="App.validateInput(this)">
         <button class="btn-step" onclick="App.stepValue('bag', 1)">+</button>
       </div>
     </div>
@@ -335,7 +355,7 @@
       <span class="stepper-label">郵局專用包材</span>
       <div class="stepper-controls">
         <button class="btn-step" onclick="App.stepValue('post_pkg', -1)">-</button>
-        <input type="number" id="post_pkg" class="stepper-value" value="0" readonly>
+        <input type="number" id="post_pkg" class="stepper-value" value="0" inputmode="numeric" onfocus="this.select()" onblur="App.validateInput(this)">
         <button class="btn-step" onclick="App.stepValue('post_pkg', 1)">+</button>
       </div>
     </div>
@@ -349,7 +369,7 @@
       <span class="stepper-label">🏪 7-11 數量</span>
       <div class="stepper-controls">
         <button class="btn-step" onclick="App.stepValue('ship_711_qty', -1)">-</button>
-        <input type="number" id="ship_711_qty" class="stepper-value" value="0" readonly>
+        <input type="number" id="ship_711_qty" class="stepper-value" value="0" inputmode="numeric" onfocus="this.select()" onblur="App.validateInput(this)">
         <button class="btn-step" onclick="App.stepValue('ship_711_qty', 1)">+</button>
       </div>
     </div>
@@ -358,7 +378,7 @@
       <span class="stepper-label">📮 郵局數量</span>
       <div class="stepper-controls">
         <button class="btn-step" onclick="App.stepValue('ship_post_qty', -1)">-</button>
-        <input type="number" id="ship_post_qty" class="stepper-value" value="0" readonly>
+        <input type="number" id="ship_post_qty" class="stepper-value" value="0" inputmode="numeric" onfocus="this.select()" onblur="App.validateInput(this)">
         <button class="btn-step" onclick="App.stepValue('ship_post_qty', 1)">+</button>
       </div>
     </div>
@@ -367,7 +387,7 @@
       <span class="stepper-label">📮 郵局單件運費 ($)</span>
       <div class="stepper-controls">
         <button class="btn-step" onclick="App.stepValue('ship_post_price', -10)">-10</button>
-        <input type="number" id="ship_post_price" class="stepper-value" value="0" style="width: 50px;" readonly>
+        <input type="number" id="ship_post_price" class="stepper-value" value="0" inputmode="numeric" onfocus="this.select()" onblur="App.validateInput(this)">
         <button class="btn-step" onclick="App.stepValue('ship_post_price', 10)">+10</button>
       </div>
     </div>
@@ -408,7 +428,24 @@ const App = (() => {
   // 初始化
   const init = () => {
     document.getElementById('input-date').value = new Date().toISOString().split('T')[0];
+    disableDoubleTapZoom();
     renderQueue();
+  };
+
+  // 🚫 禁用手機雙擊畫面放大 (Prevent Double-Tap to Zoom)
+  const disableDoubleTapZoom = () => {
+    let lastTouchTime = 0;
+    document.addEventListener('touchend', (event) => {
+      // 若點擊的是輸入框或按鈕，不攔截預設行為
+      if (['INPUT', 'BUTTON', 'TEXTAREA'].includes(event.target.tagName)) return;
+
+      const currentTime = new Date().getTime();
+      const tapLength = currentTime - lastTouchTime;
+      if (tapLength < 300 && tapLength > 0) {
+        event.preventDefault();
+      }
+      lastTouchTime = currentTime;
+    }, { passive: false });
   };
 
   // 觸覺回饋 (手機震動)
@@ -423,6 +460,16 @@ const App = (() => {
     let current = parseFloat(input.value) || 0;
     current = Math.max(0, current + amount);
     input.value = current;
+  };
+
+  // 檢查直接鍵盤輸入值 (失焦時自動調整)
+  const validateInput = (input) => {
+    let val = parseFloat(input.value);
+    if (isNaN(val) || val < 0) {
+      input.value = 0;
+    } else {
+      input.value = val;
+    }
   };
 
   // 讀取當前表單物件
@@ -499,7 +546,7 @@ const App = (() => {
       if (hasValue) {
         queue.push(currentData);
       } else {
-        alert('請先點選加減號輸入資料或點擊暫存！');
+        alert('請先點選加減號或輸入資料後再進行匯入！');
         return;
       }
     }
@@ -537,6 +584,7 @@ const App = (() => {
   return {
     init,
     stepValue,
+    validateInput,
     addToQueue,
     removeItem,
     submitAll
